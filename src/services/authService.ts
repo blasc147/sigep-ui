@@ -1,5 +1,5 @@
 import api from "./api"
-import type { LoginRequest, LoginResponse, ForgotPasswordRequest, ResetPasswordRequest } from "@/types/auth"
+import type { LoginRequest, LoginResponse, ForgotPasswordRequest, ResetPasswordRequest, RefreshTokenResponse } from "@/types/auth"
 
 export const authService = {
   login: async (data: LoginRequest): Promise<LoginResponse> => {
@@ -8,6 +8,15 @@ export const authService = {
       return response.data
     } catch (error) {
       // Propagar el error para que sea manejado por el hook
+      throw error
+    }
+  },
+
+  refreshToken: async (refreshToken: string): Promise<RefreshTokenResponse> => {
+    try {
+      const response = await api.post<RefreshTokenResponse>("/auth/refresh", { refresh_token: refreshToken })
+      return response.data
+    } catch (error) {
       throw error
     }
   },

@@ -7,6 +7,7 @@ import Head from "next/head"
 import { Sidebar } from "./Sidebar"
 import { ThemeToggle } from "@/components/ui/ThemeToggle"
 import { useAuth } from "@/hooks/useAuth"
+import { HealthStatus } from "@/components/HealthStatus"
 
 interface MainLayoutProps {
   children: React.ReactNode
@@ -45,6 +46,8 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children, title = "Dashb
         </header>
         <main className="flex-1 p-4 md:p-6 overflow-y-auto">{children}</main>
       </div>
+
+      <HealthStatus />
     </div>
   )
 }
