@@ -9,9 +9,7 @@ const api = axios.create({
   baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
-  },
-  // Agregar esta configuración para manejar CORS
-  withCredentials: true,
+  }
 })
 
 // Variable para controlar si ya estamos renovando el token
