@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/router"
 import { useQuery } from "@tanstack/react-query"
 import { MainLayout } from "@/components/layout/MainLayout"
@@ -14,8 +14,18 @@ const BeneficiariosPage = () => {
   const router = useRouter()
   const { addToast } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
+
+  // Debounce effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [searchTerm])
 
   // Consulta para obtener beneficiarios
   const {
@@ -24,25 +34,54 @@ const BeneficiariosPage = () => {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["beneficiarios", currentPage, pageSize],
-    queryFn: () => beneficiarioService.getBeneficiarios(currentPage, pageSize),
+    queryKey: ["beneficiarios", currentPage, pageSize, debouncedSearchTerm],
+    queryFn: () => {
+      // Si el término de búsqueda es menor a 3 caracteres, no buscamos
+      if (debouncedSearchTerm.length < 3) {
+        return beneficiarioService.getBeneficiarios(currentPage, pageSize)
+      }
+
+      const searchParts = debouncedSearchTerm.split(" ")
+      const searchParams: { apellido_benef?: string; nombre_benef?: string; numero_doc?: string } = {}
+
+      // Encontrar números y letras en las partes
+      const numeros = searchParts.filter(part => /^\d+$/.test(part))
+      const letras = searchParts.filter(part => !/^\d+$/.test(part))
+
+      // Regla 1: Si solo hay números, buscar por DNI
+      if (numeros.length > 0 && letras.length === 0) {
+        searchParams.numero_doc = numeros[0]
+      }
+      // Regla 2: Si solo hay una palabra con letras, buscar por apellido
+      else if (letras.length === 1 && numeros.length === 0) {
+        searchParams.apellido_benef = letras[0]
+      }
+      // Regla 3: Si hay dos palabras con letras, buscar por apellido y nombre
+      else if (letras.length === 2 && numeros.length === 0) {
+        searchParams.apellido_benef = letras[0]
+        searchParams.nombre_benef = letras[1]
+      }
+      // Regla 4: Si hay una palabra con letras y una con números
+      else if (letras.length === 1 && numeros.length === 1) {
+        searchParams.apellido_benef = letras[0]
+        searchParams.numero_doc = numeros[0]
+      }
+      // Regla 5: Si hay una palabra con números y dos con letras
+      else if (letras.length === 2 && numeros.length === 1) {
+        searchParams.apellido_benef = letras[0]
+        searchParams.nombre_benef = letras[1]
+        searchParams.numero_doc = numeros[0]
+      }
+
+      console.log('Parámetros de búsqueda:', searchParams)
+      return beneficiarioService.getBeneficiarios(currentPage, pageSize, searchParams)
+    },
+    enabled: debouncedSearchTerm.length >= 3 || debouncedSearchTerm.length === 0
   })
 
   const beneficiarios = beneficiariosResponse?.items || []
   const totalCount = beneficiariosResponse?.total || 0
   const totalPages = beneficiariosResponse?.totalPages || 1
-
-  // Filtrar beneficiarios por término de búsqueda
-  const filteredBeneficiarios = beneficiarios.filter((beneficiario) => {
-    if (!searchTerm) return true
-
-    const searchTermLower = searchTerm.toLowerCase()
-    return (
-      beneficiario.nombre_benef?.toLowerCase().includes(searchTermLower) ||
-      beneficiario.apellido_benef?.toLowerCase().includes(searchTermLower) ||
-      beneficiario.numero_doc?.toLowerCase().includes(searchTermLower)
-    )
-  })
 
   // Navegar a la página de creación
   const handleCreate = () => {
@@ -152,8 +191,8 @@ const BeneficiariosPage = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700">
-                {filteredBeneficiarios.length > 0 ? (
-                  filteredBeneficiarios.map((beneficiario) => (
+                {beneficiarios.length > 0 ? (
+                  beneficiarios.map((beneficiario) => (
                     <tr key={beneficiario.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {beneficiario.apellido_benef}, {beneficiario.nombre_benef}
@@ -218,7 +257,7 @@ const BeneficiariosPage = () => {
             <span className="text-sm text-gray-700 dark:text-gray-400">
               {totalCount > 0 ? (
                 <>
-                  Mostrando <span className="font-medium">{filteredBeneficiarios.length}</span> de{" "}
+                  Mostrando <span className="font-medium">{beneficiarios.length}</span> de{" "}
                   <span className="font-medium">{totalCount}</span> beneficiarios
                 </>
               ) : (
