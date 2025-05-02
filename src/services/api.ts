@@ -7,17 +7,19 @@ const api = axios.create({
   baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
-  },
-  // Agregar esta configuración para manejar CORS
-  withCredentials: true,
+  }
 })
 
 // Interceptor para agregar el token a las peticiones
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("access_token")
+    console.log("Token from localStorage:", token)
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+      console.log("Authorization header:", config.headers.Authorization)
+    } else {
+      console.log("No token found in localStorage")
     }
     return config
   },
