@@ -17,10 +17,20 @@ interface PaginatedResponse<T> {
   totalPages: number
 }
 
+interface SearchUsersRequest {
+  query: string
+}
+
 export const userService = {
   // Obtener todos los usuarios con paginación
   getUsers: async (page = 1, limit = 10): Promise<PaginatedResponse<User>> => {
     const response = await api.get<PaginatedResponse<User>>(`/users?page=${page}&limit=${limit}`)
+    return response.data
+  },
+
+  // Buscar usuarios
+  searchUsers: async (query: string): Promise<PaginatedResponse<User>> => {
+    const response = await api.post<PaginatedResponse<User>>("/users/search", { query })
     return response.data
   },
 
