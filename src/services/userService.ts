@@ -73,4 +73,14 @@ export const userService = {
     const response = await api.get<Efector[]>("/efectores")
     return response.data
   },
+
+  async getUserEfectores(userId: string): Promise<Efector[]> {
+    const response = await api.get(`/users/${userId}/efectores`)
+    return response.data
+  },
+
+  async updateProfile(userId: string, data: Partial<User>): Promise<User> {
+    const response = await api.put(`/users/${userId}`, data)
+    return response.data
+  }
 }
