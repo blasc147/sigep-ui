@@ -17,7 +17,15 @@ import {
 
 const columnHelper = createColumnHelper<User>()
 
-export const useUserTable = () => {
+interface PaginatedResponse<T> {
+  items: T[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+}
+
+export const useUserTable = (searchResults?: User[]) => {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = useState("")
@@ -43,18 +51,15 @@ export const useUserTable = () => {
     refetch,
   } = useQuery({
     queryKey: ["users", pagination.pageIndex, pagination.pageSize],
-    queryFn: () => userService.getUsers(pagination.pageIndex + 1, pagination.pageSize),
-    onSuccess: (data) => {
-      // Actualizar el total de registros
-      setTotalCount(data.total)
-    },
-    onError: (error: Error) => {
-      addToast(`Error al cargar usuarios: ${error.message}`, "error")
+    queryFn: async () => {
+      const response = await userService.getUsers(pagination.pageIndex + 1, pagination.pageSize)
+      setTotalCount(response.total)
+      return response
     },
   })
 
-  // Extraer los usuarios de la respuesta paginada
-  const users = usersResponse?.items || []
+  // Extraer los usuarios de la respuesta paginada o usar los resultados de búsqueda
+  const users = searchResults || usersResponse?.items || []
 
   // Mutación para eliminar usuario (si se necesita)
   const deleteUserMutation = useMutation({
@@ -116,7 +121,7 @@ export const useUserTable = () => {
       pagination,
     },
     manualPagination: true, // Indicar que la paginación es manual (controlada por el servidor)
-    pageCount: usersResponse?.totalPages || -1, // Total de páginas desde la API
+    pageCount: usersResponse?.totalPages || 0, // Total de páginas desde la API
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,

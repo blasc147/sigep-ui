@@ -1,20 +1,30 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useUserTable } from "../hooks/useUserTable"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
 import { Search, Plus, ChevronLeft, ChevronRight, AlertCircle, RefreshCw, Edit } from "react-feather"
 import { UserModal } from "./UserModal"
 import type { User } from "@/types/user"
+import { useQuery } from "@tanstack/react-query"
+import { userService } from "@/services/userService"
+import { useDebounce } from "@/hooks/useDebounce"
 
 export const UserTable = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const debouncedSearchQuery = useDebounce(searchQuery, 1000)
 
-  const { table, isLoading, error, globalFilter, setGlobalFilter, refetch, totalCount, pageCount, currentPage } =
-    useUserTable()
+  const { data: searchResponse, isLoading: isSearching } = useQuery({
+    queryKey: ["users", "search", debouncedSearchQuery],
+    queryFn: () => userService.searchUsers(debouncedSearchQuery),
+    enabled: !!debouncedSearchQuery,
+  })
+
+  const { table, isLoading, error, refetch, totalCount, pageCount, currentPage } = useUserTable(searchResponse?.items)
 
   const handleEdit = (user: User) => {
     setSelectedUser(user)
@@ -47,8 +57,8 @@ export const UserTable = () => {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
           <Input
             placeholder="Buscar usuarios..."
-            value={globalFilter || ""}
-            onChange={(e) => setGlobalFilter(e.target.value)}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-10"
             fullWidth
           />
@@ -79,7 +89,7 @@ export const UserTable = () => {
 
       {/* Tabla de usuarios o indicador de carga */}
       <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-        {isLoading ? (
+        {isLoading || isSearching ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-500"></div>
           </div>
@@ -129,7 +139,6 @@ export const UserTable = () => {
                           </div>
                         )
                       } else if (cell.column.id === "roles") {
-                        // Manejar específicamente la columna de roles
                         const roles = cell.getValue() as any[]
                         if (!roles || roles.length === 0) {
                           cellContent = "Sin roles"
@@ -141,7 +150,6 @@ export const UserTable = () => {
                           }
                         }
                       } else if (cell.column.id === "efectores") {
-                        // Manejar específicamente la columna de efectores
                         const efectores = cell.getValue() as any[]
                         if (!efectores || efectores.length === 0) {
                           cellContent = "Sin efectores"
@@ -149,7 +157,6 @@ export const UserTable = () => {
                           cellContent = `${efectores.length} efectores`
                         }
                       } else {
-                        // Para otras columnas, asegurarse de que el valor sea renderizable
                         const value = cell.getValue()
                         if (value === null || value === undefined) {
                           cellContent = "—"
@@ -198,7 +205,7 @@ export const UserTable = () => {
             {!error ? (
               <>
                 Mostrando <span className="font-medium">{table.getRowModel().rows.length}</span> de{" "}
-                <span className="font-medium">{totalCount}</span> usuarios
+                <span className="font-medium">{searchResponse?.total || totalCount}</span> usuarios
               </>
             ) : (
               "Paginación no disponible"
@@ -213,7 +220,7 @@ export const UserTable = () => {
               value={table.getState().pagination.pageSize}
               onChange={(e) => table.setPageSize(Number(e.target.value))}
               className="border rounded px-2 py-1 text-sm bg-white dark:bg-gray-800 dark:border-gray-700"
-              disabled={!!error}
+              disabled={!!error || !!searchResponse}
             >
               {[10, 20, 30, 50].map((pageSize) => (
                 <option key={pageSize} value={pageSize}>
@@ -228,20 +235,20 @@ export const UserTable = () => {
               variant="outline"
               size="sm"
               onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage() || !!error}
+              disabled={!table.getCanPreviousPage() || !!error || !!searchResponse}
               leftIcon={<ChevronLeft size={16} />}
             >
               Anterior
             </Button>
             <span className="text-sm text-gray-700 dark:text-gray-400">
               Página <span className="font-medium">{currentPage}</span> de{" "}
-              <span className="font-medium">{pageCount || 1}</span>
+              <span className="font-medium">{searchResponse?.totalPages || pageCount || 1}</span>
             </span>
             <Button
               variant="outline"
               size="sm"
               onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage() || !!error}
+              disabled={!table.getCanNextPage() || !!error || !!searchResponse}
               rightIcon={<ChevronRight size={16} />}
             >
               Siguiente
