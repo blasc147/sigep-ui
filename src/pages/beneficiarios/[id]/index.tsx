@@ -1,0 +1,414 @@
+"use client"
+
+import type React from "react"
+import { useRouter } from "next/router"
+import { useQuery } from "@tanstack/react-query"
+import { MainLayout } from "@/components/layout/MainLayout"
+import { Button } from "@/components/ui/Button"
+import { beneficiarioService } from "@/services/beneficiarioService"
+import { ArrowLeft, Edit, FileText, AlertCircle, RefreshCw } from "react-feather"
+import { useToast } from "@/components/ui/Toast"
+
+const BeneficiarioDetailPage = () => {
+  const router = useRouter()
+  const { id } = router.query
+  const { addToast } = useToast()
+  const beneficiarioId = id ? Number(id) : undefined
+
+  // Consulta para obtener los datos del beneficiario
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ["beneficiario", beneficiarioId],
+    queryFn: () => beneficiarioService.getBeneficiarioById(beneficiarioId!),
+    enabled: !!beneficiarioId,
+  })
+console.log(data);
+
+  // Extraer el beneficiario y los datos relacionados
+  const beneficiario = data
+  const pais = data?.pais
+  const departamento = data?.departamento
+  const localidad = data?.localidad
+  const municipio = data?.municipio
+  const categoria = data?.categoria
+
+  // Función para imprimir certificado
+  const handlePrintCertificate = async () => {
+    if (!beneficiarioId) return
+
+    try {
+      const blob = await beneficiarioService.imprimirCertificado(beneficiarioId)
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `certificado-beneficiario-${beneficiarioId}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      window.URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+      addToast("Certificado generado correctamente", "success")
+    } catch (error) {
+      addToast("Error al generar el certificado", "error")
+    }
+  }
+
+  // Función para ir a la página de edición
+  const handleEdit = () => {
+    router.push(`/beneficiarios/${beneficiarioId}/editar`)
+  }
+
+  return (
+    <MainLayout title="Detalle de Beneficiario">
+      <div className="max-w-5xl mx-auto bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Detalle del Beneficiario</h1>
+          <div className="flex space-x-2">
+            <Button variant="outline" onClick={() => router.push("/beneficiarios")} leftIcon={<ArrowLeft size={16} />}>
+              Volver al listado
+            </Button>
+            <Button onClick={handleEdit} leftIcon={<Edit size={16} />}>
+              Editar
+            </Button>
+            <Button variant="outline" onClick={handlePrintCertificate} leftIcon={<FileText size={16} />}>
+              Imprimir Certificado
+            </Button>
+          </div>
+        </div>
+
+        {isLoading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-500"></div>
+          </div>
+        ) : error ? (
+          <div className="bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800 rounded-lg p-4 mb-4">
+            <div className="flex items-center">
+              <AlertCircle className="text-red-500 mr-2" size={20} />
+              <div className="flex-1">
+                <p className="text-red-700 dark:text-red-400 font-medium">Error al cargar beneficiario</p>
+                <p className="text-red-600 dark:text-red-300 text-sm">{(error as Error).message}</p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => refetch()}
+                leftIcon={<RefreshCw size={16} />}
+                className="ml-4"
+              >
+                Reintentar
+              </Button>
+            </div>
+          </div>
+        ) : beneficiario ? (
+          <div className="space-y-6">
+            {/* Datos Básicos */}
+            <DetailSection title="Datos Básicos">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <DetailField label="Apellido" value={beneficiario.apellido_benef} />
+                <DetailField label="Nombre" value={beneficiario.nombre_benef} />
+                <DetailField label="Tipo de Documento" value={beneficiario.tipo_documento} />
+                <DetailField label="Número de Documento" value={beneficiario.numero_doc} />
+                <DetailField label="Sexo" value={beneficiario.sexo === "M" ? "Masculino" : "Femenino"} />
+                <DetailField
+                  label="Fecha de Nacimiento"
+                  value={new Date(beneficiario.fecha_nacimiento_benef).toLocaleDateString()}
+                />
+                <DetailField label="Categoría" value={categoria?.categoria} />
+              </div>
+            </DetailSection>
+
+            {/* Lugar de Nacimiento */}
+            <DetailSection title="Lugar de Nacimiento">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <DetailField label="País" value={beneficiario.pais_nac} />
+                <DetailField label="Provincia" value={beneficiario.provincia_nac} />
+                <DetailField label="Departamento" value={beneficiario.departamento_nac} />
+                <DetailField label="Localidad" value={beneficiario.localidad_nac} />
+              </div>
+            </DetailSection>
+
+            {/* Datos Educativos */}
+            {(beneficiario.indigena || beneficiario.alfabeta || beneficiario.estudios) && (
+              <DetailSection title="Datos Educativos">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {beneficiario.indigena && (
+                    <DetailField
+                      label="¿Pertenece a pueblo indígena?"
+                      value={beneficiario.indigena === "S" ? "Sí" : "No"}
+                    />
+                  )}
+                  {beneficiario.indigena === "S" && (
+                    <>
+                      <DetailField label="Tribu" value={beneficiario.id_tribu} />
+                      <DetailField label="Lengua" value={beneficiario.id_lengua} />
+                    </>
+                  )}
+                  {beneficiario.alfabeta && (
+                    <DetailField label="¿Sabe leer y escribir?" value={beneficiario.alfabeta === "S" ? "Sí" : "No"} />
+                  )}
+                  {beneficiario.estudios && <DetailField label="Nivel de Estudios" value={beneficiario.estudios} />}
+                  {beneficiario.anio_mayor_nivel && (
+                    <DetailField label="Año del mayor nivel alcanzado" value={beneficiario.anio_mayor_nivel} />
+                  )}
+                  {beneficiario.estadoest && <DetailField label="Estado de Estudios" value={beneficiario.estadoest} />}
+                </div>
+              </DetailSection>
+            )}
+
+            {/* Responsable */}
+            {beneficiario.responsable && (
+              <DetailSection title="Datos del Responsable">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <DetailField label="Responsable" value={beneficiario.responsable} />
+                  {beneficiario.responsable === "MADRE" && (
+                    <>
+                      <DetailField label="Tipo de Documento" value={beneficiario.tipo_doc_madre} />
+                      <DetailField label="Número de Documento" value={beneficiario.nro_doc_madre} />
+                      <DetailField label="Nombre" value={beneficiario.nombre_madre} />
+                      <DetailField label="Apellido" value={beneficiario.apellido_madre} />
+                      <DetailField
+                        label="¿Sabe leer y escribir?"
+                        value={beneficiario.alfabeta_madre === "S" ? "Sí" : "No"}
+                      />
+                      <DetailField label="Nivel de Estudios" value={beneficiario.estudios_madre} />
+                      <DetailField label="Año del mayor nivel alcanzado" value={beneficiario.anio_mayor_nivel_madre} />
+                      <DetailField label="Estado de Estudios" value={beneficiario.estadoest_madre} />
+                    </>
+                  )}
+                  {beneficiario.responsable === "PADRE" && (
+                    <>
+                      <DetailField label="Tipo de Documento" value={beneficiario.tipo_doc_padre} />
+                      <DetailField label="Número de Documento" value={beneficiario.nro_doc_padre} />
+                      <DetailField label="Nombre" value={beneficiario.nombre_padre} />
+                      <DetailField label="Apellido" value={beneficiario.apellido_padre} />
+                      <DetailField
+                        label="¿Sabe leer y escribir?"
+                        value={beneficiario.alfabeta_padre === "S" ? "Sí" : "No"}
+                      />
+                      <DetailField label="Nivel de Estudios" value={beneficiario.estudios_padre} />
+                      <DetailField label="Año del mayor nivel alcanzado" value={beneficiario.anio_mayor_nivel_padre} />
+                      <DetailField label="Estado de Estudios" value={beneficiario.estadoest_padre} />
+                    </>
+                  )}
+                  {beneficiario.responsable === "TUTOR" && (
+                    <>
+                      <DetailField label="Tipo de Documento" value={beneficiario.tipo_doc_tutor} />
+                      <DetailField label="Número de Documento" value={beneficiario.nro_doc_tutor} />
+                      <DetailField label="Nombre" value={beneficiario.nombre_tutor} />
+                      <DetailField label="Apellido" value={beneficiario.apellido_tutor} />
+                      <DetailField
+                        label="¿Sabe leer y escribir?"
+                        value={beneficiario.alfabeta_tutor === "S" ? "Sí" : "No"}
+                      />
+                      <DetailField label="Nivel de Estudios" value={beneficiario.estudios_tutor} />
+                      <DetailField label="Año del mayor nivel alcanzado" value={beneficiario.anio_mayor_nivel_tutor} />
+                      <DetailField label="Estado de Estudios" value={beneficiario.estadoest_tutor} />
+                    </>
+                  )}
+                </div>
+              </DetailSection>
+            )}
+
+            {/* Embarazo (solo para sexo F) */}
+            {beneficiario.sexo === "F" && (
+              <DetailSection title="Datos de Embarazo">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <DetailField label="¿Está embarazada?" value={beneficiario.menor_embarazada === "S" ? "Sí" : "No"} />
+                  {beneficiario.menor_embarazada === "S" && (
+                    <>
+                      <DetailField
+                        label="Fecha de Diagnóstico"
+                        value={
+                          isDefaultDate(beneficiario.fecha_diagnostico_embarazo)
+                            ? "-"
+                            : new Date(beneficiario.fecha_diagnostico_embarazo).toLocaleDateString()
+                        }
+                      />
+                      <DetailField label="Semanas de Embarazo" value={beneficiario.semanas_embarazo} />
+                      <DetailField
+                        label="Fecha Probable de Parto"
+                        value={
+                          isDefaultDate(beneficiario.fecha_probable_parto)
+                            ? "-"
+                            : new Date(beneficiario.fecha_probable_parto).toLocaleDateString()
+                        }
+                      />
+                      <DetailField
+                        label="Fecha Efectiva de Parto"
+                        value={
+                          isDefaultDate(beneficiario.fecha_efectiva_parto)
+                            ? "-"
+                            : new Date(beneficiario.fecha_efectiva_parto).toLocaleDateString()
+                        }
+                      />
+                      <DetailField
+                        label="Fecha Última Menstruación"
+                        value={isDefaultDate(beneficiario.fum) ? "-" : new Date(beneficiario.fum).toLocaleDateString()}
+                      />
+                    </>
+                  )}
+                </div>
+              </DetailSection>
+            )}
+
+            {/* Efectores */}
+            <DetailSection title="Efectores">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <DetailField label="Efector de Atención" value={beneficiario.cuie_ea} />
+                <DetailField label="Efector de Alta/Habitual" value={beneficiario.cuie_ah} />
+                {beneficiario.cuieefectoracargo && (
+                  <DetailField label="Efector a Cargo" value={beneficiario.cuieefectoracargo} />
+                )}
+              </div>
+            </DetailSection>
+
+            {/* Convivencia (solo para id_categoria 5) */}
+            {beneficiario.id_categoria === 5 && (
+              <DetailSection title="Convivencia">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <DetailField
+                    label="¿El menor convive con un adulto?"
+                    value={beneficiario.menor_convive_con_adulto === "S" ? "Sí" : "No"}
+                  />
+                </div>
+              </DetailSection>
+            )}
+
+            {/* Dirección */}
+            <DetailSection title="Dirección">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <DetailField label="País" value={pais?.nombre} />
+                <DetailField label="Provincia" value={departamento?.nombre} />
+                <DetailField label="Departamento" value={departamento?.nombre} />
+                <DetailField label="Localidad" value={localidad?.nombre} />
+                <DetailField label="Municipio" value={municipio?.nombre} />
+                <DetailField label="Barrio" value={beneficiario.barrio} />
+                <DetailField label="Calle" value={beneficiario.calle} />
+                <DetailField label="Número" value={beneficiario.numero_calle} />
+                <DetailField label="Piso" value={beneficiario.piso} />
+                <DetailField label="Departamento" value={beneficiario.dpto} />
+                <DetailField label="Manzana" value={beneficiario.manzana} />
+                <DetailField label="Entre Calle 1" value={beneficiario.entre_calle_1} />
+                <DetailField label="Entre Calle 2" value={beneficiario.entre_calle_2} />
+                <DetailField label="Código Postal" value={beneficiario.cod_pos} />
+              </div>
+            </DetailSection>
+
+            {/* Contacto */}
+            {(beneficiario.telefono || beneficiario.celular || beneficiario.otrotel || beneficiario.mail) && (
+              <DetailSection title="Contacto">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <DetailField label="Teléfono" value={beneficiario.telefono} />
+                  <DetailField label="Celular" value={beneficiario.celular} />
+                  <DetailField label="Otro Teléfono" value={beneficiario.otrotel} />
+                  <DetailField label="Email" value={beneficiario.mail} />
+                </div>
+              </DetailSection>
+            )}
+
+            {/* Discapacidades */}
+            {(beneficiario.discv ||
+              beneficiario.disca ||
+              beneficiario.discmo ||
+              beneficiario.discme ||
+              beneficiario.otradisc) && (
+              <DetailSection title="Discapacidades">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <DetailField label="Discapacidad Visual" value={beneficiario.discv === "S" ? "Sí" : "No"} />
+                  <DetailField label="Discapacidad Auditiva" value={beneficiario.disca === "S" ? "Sí" : "No"} />
+                  <DetailField label="Discapacidad Motriz" value={beneficiario.discmo === "S" ? "Sí" : "No"} />
+                  <DetailField label="Discapacidad Mental" value={beneficiario.discme === "S" ? "Sí" : "No"} />
+                  <DetailField label="Otra Discapacidad" value={beneficiario.otradisc} />
+                </div>
+              </DetailSection>
+            )}
+
+            {/* Factores de Riesgo */}
+            {(beneficiario.fumador ||
+              beneficiario.diabetes ||
+              beneficiario.infarto ||
+              beneficiario.acv ||
+              beneficiario.hta ||
+              beneficiario.estatinas ||
+              beneficiario.score_riesgo) && (
+              <DetailSection title="Factores de Riesgo">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <DetailField label="Fumador" value={beneficiario.fumador === "S" ? "Sí" : "No"} />
+                  <DetailField label="Diabetes" value={beneficiario.diabetes === "S" ? "Sí" : "No"} />
+                  <DetailField label="Infarto" value={beneficiario.infarto === "S" ? "Sí" : "No"} />
+                  <DetailField label="ACV" value={beneficiario.acv === "S" ? "Sí" : "No"} />
+                  <DetailField label="HTA" value={beneficiario.hta === "S" ? "Sí" : "No"} />
+                  <DetailField label="Estatinas" value={beneficiario.estatinas === "S" ? "Sí" : "No"} />
+                  <DetailField label="Score de Riesgo" value={beneficiario.score_riesgo} />
+                </div>
+              </DetailSection>
+            )}
+
+            {/* Geo-ubicación */}
+            {(beneficiario.ubicacionlatitud || beneficiario.ubicacionlongitud || beneficiario.precision) && (
+              <DetailSection title="Geo-ubicación">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <DetailField label="Latitud" value={beneficiario.ubicacionlatitud} />
+                  <DetailField label="Longitud" value={beneficiario.ubicacionlongitud} />
+                  <DetailField label="Precisión" value={beneficiario.precision} />
+                </div>
+              </DetailSection>
+            )}
+
+            {/* Datos Administrativos */}
+            <DetailSection title="Datos Administrativos">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <DetailField label="Tipo de Ficha" value={beneficiario.tipo_ficha} />
+                <DetailField
+                  label="Fecha de Inscripción"
+                  value={new Date(beneficiario.fecha_inscripcion).toLocaleDateString()}
+                />
+                <DetailField label="Fecha de Carga" value={new Date(beneficiario.fecha_carga).toLocaleDateString()} />
+                <DetailField label="Usuario de Carga" value={beneficiario.usuario_carga} />
+                <DetailField label="Estado" value={beneficiario.activo === "S" ? "Activo" : "Inactivo"} />
+                <div className="col-span-2">
+                  <DetailField label="Observaciones" value={beneficiario.observaciones} />
+                </div>
+                <div className="col-span-2">
+                  <DetailField label="Observaciones Generales" value={beneficiario.obsgenerales} />
+                </div>
+              </div>
+            </DetailSection>
+          </div>
+        ) : (
+          <div className="text-center py-10">No se encontró información del beneficiario</div>
+        )}
+      </div>
+    </MainLayout>
+  )
+}
+
+// Función para verificar si una fecha es la fecha por defecto (1900-01-01 o 1899-12-30)
+const isDefaultDate = (dateString: string): boolean => {
+  return dateString?.includes("1900-01-01") || dateString?.includes("1899-12-30")
+}
+
+// Componente para secciones de detalle
+const DetailSection: React.FC<{ title: string; children: React.ReactNode }> = ({ title, children }) => {
+  return (
+    <div className="mb-8">
+      <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4 pb-2 border-b border-gray-200 dark:border-gray-700">
+        {title}
+      </h3>
+      <div className="space-y-4">{children}</div>
+    </div>
+  )
+}
+
+// Componente para campos de detalle
+const DetailField: React.FC<{ label: string; value: any }> = ({ label, value }) => {
+  // Formatear el valor para mostrar
+  const displayValue = value === undefined || value === null || value === "" ? "-" : String(value)
+
+  return (
+    <div>
+      <p className="text-sm font-medium text-gray-500 dark:text-gray-400">{label}</p>
+      <p className="mt-1 text-base text-gray-900 dark:text-white">{displayValue}</p>
+    </div>
+  )
+}
+
+export default BeneficiarioDetailPage

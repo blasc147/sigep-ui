@@ -115,6 +115,8 @@ const BeneficiariosPage = () => {
       addToast("Error al generar el certificado", "error")
     }
   }
+  console.log(filteredBeneficiarios);
+  
 
   return (
     <MainLayout title="Listado de Beneficiarios">
@@ -211,7 +213,7 @@ const BeneficiariosPage = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleView(beneficiario.id!)}
+                            onClick={() => handleView(beneficiario.clave_beneficiario!)}
                             aria-label="Ver detalles"
                             leftIcon={<Eye size={16} />}
                           >
