@@ -51,9 +51,17 @@ export const LoginForm: React.FC = () => {
     }
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault()
+      handleSubmit(onSubmit)()
+    }
+  }
+
   return (
     <form 
       onSubmit={handleSubmit(onSubmit)} 
+      onKeyDown={handleKeyDown}
       className="space-y-6"
       noValidate
     >
