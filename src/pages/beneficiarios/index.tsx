@@ -230,7 +230,7 @@ const BeneficiariosPage = () => {
                         {new Date(beneficiario.fecha_nacimiento_benef).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                        {localidades[beneficiario.localidad] || "-"}
+                        {beneficiario.localidad || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {beneficiario.cuie_ea || "-"}
