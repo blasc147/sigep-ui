@@ -115,7 +115,6 @@ const BeneficiariosPage = () => {
       addToast("Error al generar el certificado", "error")
     }
   }
-  console.log(filteredBeneficiarios);
   
 
   return (

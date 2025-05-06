@@ -1,19 +1,26 @@
-export interface Role {
-  name: string
-  description: string
-}
-
 export interface Permission {
   id: string
   name: string
   description: string
 }
 
-export interface UserRole {
+export interface Role {
   id: string
-  name: Role
+  name: string
   description: string
   permissions: Permission[]
+}
+
+export interface User {
+  id: string
+  username: string
+  name: string
+  password: string
+  email: string
+  dni: string | null
+  roles: Role[]
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Efector {
@@ -21,18 +28,6 @@ export interface Efector {
   nombre: string
   localidad: string
   codigo: string
-}
-
-export interface User {
-  id: string
-  username: string
-  name: string
-  email: string
-  roles: Role[]
-  cuies: string[]
-  dni: string | null
-  createdAt: string
-  updatedAt: string
 }
 
 export interface CreateUserRequest {

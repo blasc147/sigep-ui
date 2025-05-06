@@ -80,7 +80,7 @@ export const userService = {
   },
 
   async updateProfile(userId: string, data: Partial<User>): Promise<User> {
-    const response = await api.put(`/users/${userId}`, data)
+    const response = await api.patch(`/users/${userId}`, data)
     return response.data
   }
 }

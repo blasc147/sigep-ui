@@ -1,23 +1,33 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useAuth } from "@/hooks/useAuth"
+import { useState } from "react"
 import { userService } from "@/services/userService"
-import type { Efector } from "@/types/user"
 import { Card } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
 import { Button } from "@/components/ui/Button"
 import { useForm } from "react-hook-form"
 import { MainLayout } from "@/components/layout/MainLayout"
 import { Edit2, Save, X, Key } from "react-feather"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { useRouter } from "next/router"
+import { useAuth } from "@/hooks/useAuth"
+import { useToast } from "@/components/ui/Toast"
 
 export default function ProfilePage() {
-  const { user } = useAuth()
-  const [efectores, setEfectores] = useState<Efector[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const { user: authUser } = useAuth()
   const [isEditing, setIsEditing] = useState(false)
   const [isResettingPassword, setIsResettingPassword] = useState(false)
   const [resetMessage, setResetMessage] = useState<string | null>(null)
+  const queryClient = useQueryClient()
+  const router = useRouter()
+  const { addToast } = useToast()
+
+  // Consulta para obtener los datos del usuario
+  const { data: user, isLoading } = useQuery({
+    queryKey: ["user", authUser?.id],
+    queryFn: () => userService.getUserById(authUser!.id.toString()),
+    enabled: !!authUser?.id,
+  })
 
   const {
     register,
@@ -31,36 +41,27 @@ export default function ProfilePage() {
     },
   })
 
-  useEffect(() => {
-    if (user?.id) {
-      loadEfectores()
-    }
-  }, [user?.id])
+  // Consulta para obtener los efectores del usuario
+  const { data: efectores = [] } = useQuery({
+    queryKey: ["userEfectores", user?.id],
+    queryFn: () => userService.getUserEfectores(user!.id),
+    enabled: !!user?.id,
+  })
 
-  const loadEfectores = async () => {
-    try {
-      const data = await userService.getUserEfectores(user!.id)
-      setEfectores(data)
-    } catch (error) {
-      console.error("Error al cargar efectores:", error)
-    }
-  }
-
-  const onSubmit = async (data: { name: string; email: string }) => {
-    if (!user) return
-
-    setIsLoading(true)
-    try {
-      await userService.updateProfile(user.id, data)
+  // Mutación para actualizar el perfil
+  const updateProfileMutation = useMutation({
+    mutationFn: (data: { name: string; email: string }) => 
+      userService.updateProfile(user!.id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["user", user?.id] })
       setIsEditing(false)
-      // Aquí podrías mostrar un mensaje de éxito
-    } catch (error) {
-      console.error("Error al actualizar perfil:", error)
-      // Aquí podrías mostrar un mensaje de error
-    } finally {
-      setIsLoading(false)
+      addToast("Perfil actualizado correctamente", "success")
+    },
+    onError: (error) => {
+      addToast("Error al actualizar el perfil", "error")
+      console.error("Error al actualizar el perfil:", error)
     }
-  }
+  })
 
   const handleEdit = () => {
     setIsEditing(true)
@@ -105,7 +106,20 @@ export default function ProfilePage() {
     }
   }
 
-  if (!user) return null
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-full">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
+        </div>
+      </MainLayout>
+    )
+  }
+
+  if (!user) {
+    router.push("/login")
+    return null
+  }
 
   return (
     <MainLayout>
@@ -142,8 +156,8 @@ export default function ProfilePage() {
                 </Button>
                 <Button
                   variant="primary"
-                  onClick={handleSubmit(onSubmit)}
-                  isLoading={isLoading}
+                  onClick={handleSubmit((data) => updateProfileMutation.mutate(data))}
+                  isLoading={updateProfileMutation.isPending}
                   leftIcon={<Save size={16} />}
                 >
                   Guardar
@@ -226,7 +240,7 @@ export default function ProfilePage() {
               <div className="space-y-2">
                 {user.roles.map((role) => (
                   <div
-                    key={role.name}
+                    key={role.id}
                     className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg"
                   >
                     <h3 className="font-medium">{role.name}</h3>
