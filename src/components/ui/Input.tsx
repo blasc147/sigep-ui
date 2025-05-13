@@ -12,18 +12,6 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, fullWidth = false, leftIcon, rightIcon, className, onKeyDown, ...props }, ref) => {
-    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      if (e.key === "Enter") {
-        e.preventDefault()
-        const form = e.currentTarget.form
-        if (form) {
-          const submitEvent = new Event("submit", { cancelable: true, bubbles: true })
-          form.dispatchEvent(submitEvent)
-        }
-      }
-      onKeyDown?.(e)
-    }
-
     return (
       <div className={clsx("flex flex-col", fullWidth && "w-full")}>
         {label && <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>}
@@ -43,7 +31,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               fullWidth && "w-full",
               className,
             )}
-            onKeyDown={handleKeyDown}
+            onKeyDown={onKeyDown}
             {...props}
           />
           {rightIcon && (
