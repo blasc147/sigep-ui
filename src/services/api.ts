@@ -27,6 +27,17 @@ const isTokenExpiringSoon = (token: string): boolean => {
   }
 }
 
+// Función para verificar si el token ya expiró
+const isTokenExpired = (token: string): boolean => {
+  try {
+    const decoded = jwtDecode<{ exp: number }>(token)
+    const now = Math.floor(Date.now() / 1000)
+    return decoded.exp < now
+  } catch (error) {
+    return true // Si hay error al decodificar, asumimos que está expirado
+  }
+}
+
 // Interceptor para agregar el token a las peticiones
 api.interceptors.request.use(
   async (config) => {
@@ -39,6 +50,16 @@ api.interceptors.request.use(
     const refreshToken = localStorage.getItem("refresh_token")
 
     if (token) {
+      // Si el token ya está expirado, forzar logout y redirección
+      if (isTokenExpired(token)) {
+        localStorage.clear()
+        sessionStorage.clear()
+        if (window && typeof window !== 'undefined') {
+          window.location.href = "/login"
+        }
+        // Cancelar la request
+        return Promise.reject(new Error("Token expirado"))
+      }
       // Si el token está próximo a expirar y no estamos ya renovando
       if (isTokenExpiringSoon(token) && refreshToken && !isRefreshing) {
         isRefreshing = true
@@ -95,6 +116,14 @@ api.interceptors.response.use(
         localStorage.removeItem("access_token")
         localStorage.removeItem("refresh_token")
         localStorage.removeItem("user")
+        sessionStorage.clear()
+        if (window && typeof window !== 'undefined') {
+          // Limpiar todo el localStorage y sessionStorage
+          localStorage.clear()
+          sessionStorage.clear()
+          // Redirigir a login
+          window.location.href = "/login"
+        }
         return Promise.reject(refreshError)
       }
     }
