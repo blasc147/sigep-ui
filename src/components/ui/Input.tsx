@@ -11,7 +11,7 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, fullWidth = false, leftIcon, rightIcon, className, ...props }, ref) => {
+  ({ label, error, fullWidth = false, leftIcon, rightIcon, className, onKeyDown, ...props }, ref) => {
     return (
       <div className={clsx("flex flex-col", fullWidth && "w-full")}>
         {label && <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">{label}</label>}
@@ -31,6 +31,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
               fullWidth && "w-full",
               className,
             )}
+            onKeyDown={onKeyDown}
             {...props}
           />
           {rightIcon && (

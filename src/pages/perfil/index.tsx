@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { userService } from "@/services/userService"
 import { Card } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
@@ -21,6 +21,12 @@ export default function ProfilePage() {
   const queryClient = useQueryClient()
   const router = useRouter()
   const { addToast } = useToast()
+
+  useEffect(() => {
+    if (!authUser) {
+      router.push("/login")
+    }
+  }, [authUser, router])
 
   // Consulta para obtener los datos del usuario
   const { data: user, isLoading } = useQuery({
@@ -117,8 +123,13 @@ export default function ProfilePage() {
   }
 
   if (!user) {
-    router.push("/login")
-    return null
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-full">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 dark:border-white"></div>
+        </div>
+      </MainLayout>
+    )
   }
 
   return (

@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/Input"
 import { beneficiarioService } from "@/services/beneficiarioService"
 import { Search, Plus, ChevronLeft, ChevronRight, AlertCircle, RefreshCw, FileText, Edit, Eye } from "react-feather"
 import { useToast } from "@/components/ui/Toast"
+import type { Localidad } from "@/types/beneficiario"
 
 const BeneficiariosPage = () => {
   const router = useRouter()
@@ -82,6 +83,27 @@ const BeneficiariosPage = () => {
   const beneficiarios = beneficiariosResponse?.items || []
   const totalCount = beneficiariosResponse?.total || 0
   const totalPages = beneficiariosResponse?.totalPages || 1
+
+  // Consulta para obtener las localidades
+  const { data: localidades = {} } = useQuery({
+    queryKey: ["localidades"],
+    queryFn: async () => {
+      // Obtener todas las localidades necesarias
+      const localidadesIds = Array.from(new Set(beneficiarios.map(b => b.localidad)))
+      const localidadesMap: Record<number, string> = {}
+      
+      // Por ahora, solo mostraremos el ID
+      // TODO: Implementar la obtención de nombres de localidades
+      localidadesIds.forEach(id => {
+        if (typeof id === 'number') {
+          localidadesMap[id] = `${id}`
+        }
+      })
+      
+      return localidadesMap
+    },
+    enabled: beneficiarios.length > 0
+  })
 
   // Navegar a la página de creación
   const handleCreate = () => {
@@ -187,6 +209,9 @@ const BeneficiariosPage = () => {
                     Localidad
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Efector
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     Acciones
                   </th>
                 </tr>
@@ -206,6 +231,9 @@ const BeneficiariosPage = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {beneficiario.localidad || "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        {beneficiario.cuie_ea || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         <div className="flex space-x-2 text-brand-500">
