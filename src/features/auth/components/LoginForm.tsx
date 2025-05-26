@@ -26,9 +26,7 @@ export const LoginForm: React.FC = () => {
     formState: { errors },
   } = useForm<LoginFormData>()
 
-  const onSubmit = async (data: LoginFormData, e: React.BaseSyntheticEvent | undefined) => {
-    e?.preventDefault()
-
+  const onSubmit = async (data: LoginFormData) => {
     setLocalError(null)
     clearError()
 
@@ -53,8 +51,20 @@ export const LoginForm: React.FC = () => {
     }
   }
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault()
+      handleSubmit(onSubmit)()
+    }
+  }
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <form 
+      onSubmit={handleSubmit(onSubmit)} 
+      onKeyDown={handleKeyDown}
+      className="space-y-6"
+      noValidate
+    >
       <h2 className="text-2xl font-bold text-center text-gray-900 dark:text-white mb-6">Iniciar Sesión</h2>
 
       {displayError && (
@@ -114,9 +124,6 @@ export const LoginForm: React.FC = () => {
           type="submit"
           fullWidth
           isLoading={isLoading}
-          onClick={(e) => {
-            handleSubmit(onSubmit)(e as any)
-          }}
         >
           Iniciar Sesión
         </Button>

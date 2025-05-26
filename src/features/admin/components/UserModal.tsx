@@ -27,6 +27,7 @@ type FormData = {
 
 export const UserModal = ({ isOpen, onClose, user }: UserModalProps) => {
   const [selectedEfectores, setSelectedEfectores] = useState<string[]>([])
+  const [efectorSearch, setEfectorSearch] = useState("")
   const queryClient = useQueryClient()
   const { addToast } = useToast()
 
@@ -53,6 +54,16 @@ export const UserModal = ({ isOpen, onClose, user }: UserModalProps) => {
     onError: (error: Error) => {
       addToast(`Error al cargar efectores: ${error.message}`, "error")
     },
+  })
+
+  // Filtrar efectores según búsqueda
+  const filteredEfectores = efectores.filter((efector: Efector) => {
+    const search = efectorSearch.toLowerCase()
+    return (
+      efector.nombre.toLowerCase().includes(search) ||
+      efector.localidad.toLowerCase().includes(search) ||
+      efector.cuie.toLowerCase().includes(search)
+    )
   })
 
   // Mutación para crear usuario
@@ -271,28 +282,39 @@ export const UserModal = ({ isOpen, onClose, user }: UserModalProps) => {
 
           <div className="mt-4">
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Efectores</label>
+            <Input
+              placeholder="Buscar efector por nombre, localidad o CUIE..."
+              value={efectorSearch}
+              onChange={e => setEfectorSearch(e.target.value)}
+              className="mb-2"
+              fullWidth
+            />
             <div className="border border-gray-300 dark:border-gray-600 rounded-md p-2 max-h-60 overflow-y-auto">
               {efectores.length === 0 ? (
                 <p className="text-gray-500 dark:text-gray-400">Cargando efectores...</p>
               ) : (
                 <div className="space-y-2">
-                  {efectores.map((efector: Efector) => (
-                    <div key={efector.cuie} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id={`efector-${efector.cuie}`}
-                        checked={selectedEfectores.includes(efector.cuie)}
-                        onChange={() => handleEfectorToggle(efector.cuie)}
-                        className="h-4 w-4 text-brand-500 focus:ring-brand-500 border-gray-300 rounded"
-                      />
-                      <label
-                        htmlFor={`efector-${efector.cuie}`}
-                        className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
-                      >
-                        {efector.nombre} - {efector.localidad} ({efector.cuie})
-                      </label>
-                    </div>
-                  ))}
+                  {filteredEfectores.length === 0 ? (
+                    <p className="text-gray-500 dark:text-gray-400">No se encontraron efectores</p>
+                  ) : (
+                    filteredEfectores.map((efector: Efector) => (
+                      <div key={efector.cuie} className="flex items-center">
+                        <input
+                          type="checkbox"
+                          id={`efector-${efector.cuie}`}
+                          checked={selectedEfectores.includes(efector.cuie)}
+                          onChange={() => handleEfectorToggle(efector.cuie)}
+                          className="h-4 w-4 text-brand-500 focus:ring-brand-500 border-gray-300 rounded"
+                        />
+                        <label
+                          htmlFor={`efector-${efector.cuie}`}
+                          className="ml-2 block text-sm text-gray-700 dark:text-gray-300"
+                        >
+                          {efector.nombre} - {efector.localidad} ({efector.cuie})
+                        </label>
+                      </div>
+                    ))
+                  )}
                 </div>
               )}
             </div>
