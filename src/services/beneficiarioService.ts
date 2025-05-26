@@ -25,8 +25,22 @@ interface PaginatedResponse<T> {
 
 export const beneficiarioService = {
   // Beneficiarios CRUD
-  getBeneficiarios: async (page = 1, limit = 10): Promise<PaginatedResponse<Beneficiario>> => {
-    const response = await api.get<PaginatedResponse<Beneficiario>>(`/beneficiarios?page=${page}&limit=${limit}`)
+  getBeneficiarios: async (page = 1, limit = 10, searchParams?: { apellido_benef?: string; nombre_benef?: string; numero_doc?: string }): Promise<PaginatedResponse<Beneficiario>> => {
+    let url = `/beneficiarios?page=${page}&limit=${limit}`
+    
+    if (searchParams) {
+      if (searchParams.apellido_benef) {
+        url += `&apellido_benef=${encodeURIComponent(searchParams.apellido_benef)}`
+      }
+      if (searchParams.nombre_benef) {
+        url += `&nombre_benef=${encodeURIComponent(searchParams.nombre_benef)}`
+      }
+      if (searchParams.numero_doc) {
+        url += `&numero_doc=${encodeURIComponent(searchParams.numero_doc)}`
+      }
+    }
+    
+    const response = await api.get<PaginatedResponse<Beneficiario>>(url)
     return response.data
   },
 
