@@ -18,6 +18,7 @@ import { FactoresRiesgoSection } from "@/features/beneficiarios/components/FormS
 import { DatosAdministrativosSection } from "@/features/beneficiarios/components/FormSections/DatosAdministrativosSection"
 import { ErrorSummary } from "@/features/beneficiarios/components/ErrorSummary"
 import { Save, ArrowLeft, AlertCircle, RefreshCw } from "react-feather"
+import { useEffect } from "react"
 
 const EditarBeneficiarioPage = () => {
   const router = useRouter()
@@ -74,10 +75,23 @@ const EditarBeneficiarioPage = () => {
     beneficiarioError,
     isFormLoaded,
     setValue,
+    loadBeneficiarioData,
   } = useEditBeneficiarioForm(beneficiarioId)
 
-  console.log(isFormLoaded);
-  
+  // Forzar la carga del formulario después de 3 segundos si aún no se ha cargado
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (!isFormLoaded && beneficiario) {
+        console.log("Forzando carga del formulario después de timeout")
+        loadBeneficiarioData(beneficiario)
+      }
+    }, 3000)
+
+    return () => clearTimeout(timer)
+  }, [isFormLoaded, beneficiario, loadBeneficiarioData])
+
+  // Mostrar el formulario si tenemos datos del beneficiario, incluso si isFormLoaded es false
+  const shouldShowForm = beneficiario && !isLoadingBeneficiario
 
   return (
     <MainLayout title="Editar Beneficiario">
@@ -116,7 +130,7 @@ const EditarBeneficiarioPage = () => {
               </Button>
             </div>
           </div>
-        ) : isFormLoaded ? (
+        ) : shouldShowForm ? (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             {/* Datos básicos */}
             <DatosBasicosSection control={control} register={register} errors={errors} categorias={categorias} />
@@ -163,8 +177,6 @@ const EditarBeneficiarioPage = () => {
             {/* Efectores */}
             <EfectoresSection control={control} errors={errors} efectores={efectores} isLoading={isLoadingEfectores} />
 
-            {/*  errors={errors} efectores={efectores} isLoading={isLoadingEfectores} />
-
             {/* Convive con adulto (solo para id_categoria 5) */}
             {idCategoria === 5 && <ConvivenciaSection control={control} errors={errors} />}
 
@@ -203,7 +215,7 @@ const EditarBeneficiarioPage = () => {
             {/* Factores de riesgo */}
             <FactoresRiesgoSection control={control} register={register} errors={errors} />
 
-
+            
             {/* Datos administrativos */}
             <DatosAdministrativosSection control={control} register={register} errors={errors} />
 

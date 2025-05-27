@@ -8,6 +8,42 @@ export type NivelEstudios = "PRIMARIO" | "SECUNDARIO" | "UNIVERSITARIO" | "NINGU
 export type EstadoEstudios = "COMPLETO" | "INCOMPLETO" | "CURSANDO" | "ABANDONADO" | "EN_CURSO"
 export type TipoFicha = "1" | "2" | "3"
 
+// Add these interfaces at the appropriate place in the file
+export interface BeneficiarioResponsePaisNac {
+  id_pais: number
+  nombre: string
+}
+
+export interface BeneficiarioResponseProvinciaNac {
+  id_provincia: number
+  nombre: string
+}
+
+export interface BeneficiarioResponseLocalidadNac {
+  id_localidad: number
+  nombre: string
+}
+
+export interface BeneficiarioResponseDepartamento {
+  id_departamento: number
+  nombre: string
+}
+
+export interface BeneficiarioResponseLocalidad {
+  id_localidad: number
+  nombre: string
+}
+
+export interface BeneficiarioResponseMunicipio {
+  id_municipio: number
+  nombre: string
+}
+
+export interface BeneficiarioResponseCodPos {
+  id_codpos: number
+  codigopostal: string
+}
+
 // Interfaz principal para el beneficiario
 export interface Beneficiario {
   // Datos básicos (obligatorios)
@@ -21,11 +57,11 @@ export interface Beneficiario {
   sexo: Sexo
   fecha_nacimiento_benef: string
 
-  // Lugar de nacimiento
-  pais_nac: number // ID del país
-  provincia_nac?: number // ID de la provincia
-  departamento_nac?: number // ID del departamento
-  localidad_nac?: number // ID de la localidad
+  // Lugar de nacimiento - ahora con objetos anidados
+  pais_nac: BeneficiarioResponsePaisNac | number // ID del país o objeto
+  provincia_nac?: BeneficiarioResponseProvinciaNac | number // ID o objeto
+  departamento_nac?: BeneficiarioResponseDepartamento | number // ID o objeto
+  localidad_nac?: BeneficiarioResponseLocalidadNac | number // ID o objeto
 
   // Datos educativos
   indigena?: SiNo
@@ -85,13 +121,13 @@ export interface Beneficiario {
   // Convive con adulto (condicional para id_categoria 5)
   menor_convive_con_adulto?: SiNo
 
-  // Dirección
-  pais_residencia: number // ID del país
-  provincia: number // ID de la provincia
-  departamento: number // ID del departamento
-  localidad: number // ID de la localidad
-  municipio: number // ID del municipio
-  barrio: number // ID del barrio
+  // Dirección - actualizada con objetos anidados
+  pais_residencia: number | string // ID del país o nombre
+  provincia: BeneficiarioResponseProvinciaNac | number // ID o objeto
+  departamento: BeneficiarioResponseDepartamento | number // ID o objeto
+  localidad: BeneficiarioResponseLocalidad | number // ID o objeto
+  municipio: BeneficiarioResponseMunicipio | number // ID o objeto
+  barrio: any // Puede ser string, número u objeto
   calle?: string
   numero_calle?: string
   piso?: string
@@ -99,7 +135,7 @@ export interface Beneficiario {
   manzana?: string
   entre_calle_1?: string
   entre_calle_2?: string
-  cod_pos: string
+  cod_pos: BeneficiarioResponseCodPos | string // Objeto o string
 
   // Contacto
   telefono?: string
@@ -145,74 +181,81 @@ export interface Beneficiario {
 
 export interface BeneficiarioCreateRequest extends Omit<Beneficiario, "id"> {}
 
-// Interfaces para los datos de referencia
+// Interfaces para los datos de referencia actualizadas según la API
 export interface Pais {
-  id: number
+  id_pais: number
   nombre: string
-  codigo: string
 }
 
 export interface Provincia {
-  id: number
+  id_provincia: number
+  cod_provincia: string
   nombre: string
-  codigo: string
-  pais_id: number
+  id_pais: number
+  pais?: Pais
 }
 
 export interface Departamento {
-  id: number
+  id_departamento: number
   nombre: string
-  codigo: string
-  provincia_id: number
+  id_provincia: number
+  provincia?: Provincia
 }
 
 export interface Localidad {
-  id: number
+  id_localidad: number
+  codigopostal: string
   nombre: string
-  codigo: string
-  departamento_id: number
+  id_departamento: number
+  departamento?: Departamento
 }
 
 export interface CodigoPostal {
-  id: number
-  codigo: string
-  localidad_id: number
+  id_codpos: number
+  codigopostal: string
+  id_localidad: number
+  localidad?: Localidad
 }
 
 export interface Municipio {
-  id: number
+  id_municipio: number
   nombre: string
-  codigo: string
-  localidad_id: number
+  id_localidad: number
+  id_codpos: number
+  localidad?: Localidad
+  codPost?: CodigoPostal
 }
 
 export interface Barrio {
-  id: number
+  id_barrio: number
   nombre: string
-  codigo: string
-  municipio_id: number
+  id_municipio: number
+  municipio?: Municipio
 }
 
 export interface Calle {
-  id: number
+  idcalle: number
   nombre: string
-  localidad_id: number
+  tipo: string
+  cp: string
+  ciudad: string
+  idlocalidad: number
+  localidad?: Localidad
 }
 
 export interface Categoria {
-  id: number
-  nombre: string
-  codigo: string
+  id_categoria: number
+  categoria: string
+  tipo_ficha: string
 }
 
 export interface Tribu {
-  id: number
+  id_tribu: number
   nombre: string
-  codigo: string
 }
 
 export interface Lengua {
-  id: number
+  id_lengua: number
   nombre: string
 }
 

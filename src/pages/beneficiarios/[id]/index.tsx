@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button"
 import { beneficiarioService } from "@/services/beneficiarioService"
 import { ArrowLeft, Edit, FileText, AlertCircle, RefreshCw } from "react-feather"
 import { useToast } from "@/components/ui/Toast"
+import { useMemo } from "react"
 
 const BeneficiarioDetailPage = () => {
   const router = useRouter()
@@ -16,20 +17,16 @@ const BeneficiarioDetailPage = () => {
   const beneficiarioId = id ? Number(id) : undefined
 
   // Consulta para obtener los datos del beneficiario
-  const { data, isLoading, error, refetch } = useQuery({
+  const {
+    data: beneficiario,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
     queryKey: ["beneficiario", beneficiarioId],
     queryFn: () => beneficiarioService.getBeneficiarioById(beneficiarioId!),
     enabled: !!beneficiarioId,
   })
-console.log(data);
-
-  // Extraer el beneficiario y los datos relacionados
-  const beneficiario = data
-  const pais = data?.pais
-  const departamento = data?.departamento
-  const localidad = data?.localidad
-  const municipio = data?.municipio
-  const categoria = data?.categoria
 
   // Función para imprimir certificado
   const handlePrintCertificate = async () => {
@@ -111,7 +108,7 @@ console.log(data);
                   label="Fecha de Nacimiento"
                   value={new Date(beneficiario.fecha_nacimiento_benef).toLocaleDateString()}
                 />
-                <DetailField label="Categoría" value={categoria?.categoria} />
+                <DetailField label="Categoría" value={`ID: ${beneficiario.id_categoria}`} />
               </div>
             </DetailSection>
 
@@ -275,11 +272,11 @@ console.log(data);
             {/* Dirección */}
             <DetailSection title="Dirección">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <DetailField label="País" value={pais?.nombre} />
-                <DetailField label="Provincia" value={departamento?.nombre} />
-                <DetailField label="Departamento" value={departamento?.nombre} />
-                <DetailField label="Localidad" value={localidad?.nombre} />
-                <DetailField label="Municipio" value={municipio?.nombre} />
+                <DetailField label="País" value={beneficiario.pais_residencia || "Argentina"} />
+                <DetailField label="Provincia" value={beneficiario.provincia || "Chaco"} />
+                <DetailField label="Departamento" value={beneficiario.departamento} />
+                <DetailField label="Localidad" value={beneficiario.localidad} />
+                <DetailField label="Municipio" value={beneficiario.municipio} />
                 <DetailField label="Barrio" value={beneficiario.barrio} />
                 <DetailField label="Calle" value={beneficiario.calle} />
                 <DetailField label="Número" value={beneficiario.numero_calle} />
@@ -383,6 +380,7 @@ console.log(data);
 
 // Función para verificar si una fecha es la fecha por defecto (1900-01-01 o 1899-12-30)
 const isDefaultDate = (dateString: string): boolean => {
+  if (!dateString) return true
   return dateString?.includes("1900-01-01") || dateString?.includes("1899-12-30")
 }
 
@@ -398,10 +396,41 @@ const DetailSection: React.FC<{ title: string; children: React.ReactNode }> = ({
   )
 }
 
-// Componente para campos de detalle
+// Fix the DetailField component to properly handle nested objects
 const DetailField: React.FC<{ label: string; value: any }> = ({ label, value }) => {
   // Formatear el valor para mostrar
-  const displayValue = value === undefined || value === null || value === "" ? "-" : String(value)
+  const displayValue = useMemo(() => {
+    if (value === undefined || value === null || value === "") {
+      return "—"
+    }
+
+    if (typeof value === "object") {
+      // Handle Date objects
+      if (value instanceof Date) {
+        return value.toLocaleDateString()
+      }
+
+      // Handle objects with id and name properties (like provincia_nac, localidad, etc.)
+      if (value.nombre) {
+        return value.nombre
+      }
+
+      // Handle cod_pos object
+      if (value.codigopostal) {
+        return value.codigopostal
+      }
+
+      // Handle arrays
+      if (Array.isArray(value)) {
+        return value.join(", ")
+      }
+
+      // For other objects, convert to string
+      return JSON.stringify(value)
+    }
+
+    return String(value)
+  }, [value])
 
   return (
     <div>

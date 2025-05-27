@@ -75,7 +75,6 @@ export const DireccionSection = ({
         <Controller
           name="pais_residencia"
           control={control}
-          rules={{ required: "El país de residencia es requerido" }}
           render={({ field }) => (
             <SearchableSelect
               name="pais_residencia"
@@ -90,7 +89,7 @@ export const DireccionSection = ({
                 setPaisResidenciaId(value ? Number(value) : null)
               }}
               error={errors.pais_residencia?.message}
-              required
+              
             />
           )}
         />
