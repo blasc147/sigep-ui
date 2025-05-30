@@ -1,12 +1,13 @@
 "use client"
 
-import { Controller } from "react-hook-form"
+import { Controller, useWatch } from "react-hook-form"
+import { useEffect } from "react"
 import { Input } from "@/components/ui/Input"
 import { FormSection } from "@/features/beneficiarios/components/FormSection"
 import { RadioGroup } from "@/features/beneficiarios/components/RadioGroup"
 import { SelectField } from "@/features/beneficiarios/components/SelectField"
 import { CLASE_DOCUMENTO_OPTIONS, SEXO_OPTIONS, TIPO_DOCUMENTO_OPTIONS } from "@/constants/options"
-import type { Control, FieldErrors, UseFormRegister } from "react-hook-form"
+import type { Control, FieldErrors, UseFormRegister, UseFormSetValue } from "react-hook-form"
 import type { BeneficiarioCreateRequest, Categoria } from "@/types/beneficiario"
 
 interface DatosBasicosSectionProps {
@@ -14,9 +15,24 @@ interface DatosBasicosSectionProps {
   register: UseFormRegister<BeneficiarioCreateRequest>
   errors: FieldErrors<BeneficiarioCreateRequest>
   categorias: Categoria[]
+  setValue: UseFormSetValue<BeneficiarioCreateRequest>
+  isEditMode?: boolean
 }
 
-export const DatosBasicosSection = ({ control, register, errors, categorias }: DatosBasicosSectionProps) => {
+export const DatosBasicosSection = ({ control, register, errors, categorias, setValue, isEditMode = false }: DatosBasicosSectionProps) => {
+  const fechaNacimiento = useWatch({
+    control,
+    name: "fecha_nacimiento_benef"
+  });
+  const edad = fechaNacimiento ? calcularEdad(fechaNacimiento) : null;
+  const categoriaId = edad && edad > 19 ? 6 : 5;
+
+  useEffect(() => {
+    if (fechaNacimiento) {
+      setValue("id_categoria", categoriaId);
+    }
+  }, [fechaNacimiento, categoriaId, setValue]);
+
   return (
     <FormSection title="Datos Básicos">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -50,6 +66,7 @@ export const DatosBasicosSection = ({ control, register, errors, categorias }: D
               error={errors.clase_documento_benef?.message}
               required
               inline
+              disabled={isEditMode}
             />
           )}
         />
@@ -63,10 +80,11 @@ export const DatosBasicosSection = ({ control, register, errors, categorias }: D
               name="tipo_documento"
               label="Tipo de Documento"
               options={TIPO_DOCUMENTO_OPTIONS}
-              value={field.value || ""}
+              value={field.value || "DNI"}
               onChange={field.onChange}
               error={errors.tipo_documento?.message}
               required
+              disabled={isEditMode}
             />
           )}
         />
@@ -77,6 +95,16 @@ export const DatosBasicosSection = ({ control, register, errors, categorias }: D
           error={errors.numero_doc?.message}
           fullWidth
           required
+          disabled={isEditMode}
+        />
+
+        <Input
+          label="Fecha de Nacimiento"
+          type="date"
+          {...register("fecha_nacimiento_benef", { required: "La fecha de nacimiento es requerida" })}
+          error={errors.fecha_nacimiento_benef?.message}
+          fullWidth
+          required
         />
 
         <Controller
@@ -84,21 +112,17 @@ export const DatosBasicosSection = ({ control, register, errors, categorias }: D
           control={control}
           rules={{ required: "La categoría es requerida" }}
           render={({ field }) => (
-            <SelectField
-              name="id_categoria"
-              label="Categoría"
-              options={categorias.map((cat) => ({
-                value: cat.id_categoria,
-                label: cat.categoria,
-              }))}
-              value={field.value || ""}
-              onChange={(value) => {
-                const numValue = value ? Number(value) : undefined
-                field.onChange(numValue)
-              }}
-              error={errors.id_categoria?.message}
-              required
-            />
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Categoría <span className="text-red-500">*</span>
+              </label>
+              <div className="block w-full rounded-md border border-gray-300 bg-gray-50 px-3 py-2 text-gray-500 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                {categorias.find(cat => cat.id_categoria === field.value)?.categoria || "Categoría 5"}
+              </div>
+              {errors.id_categoria?.message && (
+                <p className="mt-1 text-sm text-red-500">{errors.id_categoria.message}</p>
+              )}
+            </div>
           )}
         />
 
@@ -119,16 +143,21 @@ export const DatosBasicosSection = ({ control, register, errors, categorias }: D
             />
           )}
         />
-
-        <Input
-          label="Fecha de Nacimiento"
-          type="date"
-          {...register("fecha_nacimiento_benef", { required: "La fecha de nacimiento es requerida" })}
-          error={errors.fecha_nacimiento_benef?.message}
-          fullWidth
-          required
-        />
       </div>
     </FormSection>
   )
 }
+
+const calcularEdad = (fechaNacimiento: string) => {
+  const hoy = new Date();
+  const fechaNac = new Date(fechaNacimiento);
+  let edad = hoy.getFullYear() - fechaNac.getFullYear();
+  const mesActual = hoy.getMonth();
+  const mesNacimiento = fechaNac.getMonth();
+  
+  if (mesActual < mesNacimiento || (mesActual === mesNacimiento && hoy.getDate() < fechaNac.getDate())) {
+    edad--;
+  }
+  
+  return edad;
+};

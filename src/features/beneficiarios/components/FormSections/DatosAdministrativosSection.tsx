@@ -1,36 +1,28 @@
 "use client"
 
-import { Controller } from "react-hook-form"
+import { Controller, useForm } from "react-hook-form"
 import { Input } from "@/components/ui/Input"
 import { FormSection } from "@/features/beneficiarios/components/FormSection"
 import { SelectField } from "@/features/beneficiarios/components/SelectField"
 import { TIPO_FICHA_OPTIONS } from "@/constants/options"
+import { useEffect } from "react"
 
 interface DatosAdministrativosSectionProps {
   control: any
   register: any
   errors: any
+  setValue: any
 }
 
-export const DatosAdministrativosSection = ({ control, register, errors }: DatosAdministrativosSectionProps) => {
+export const DatosAdministrativosSection = ({ control, register, errors, setValue }: DatosAdministrativosSectionProps) => {
+  // Set tipo_ficha to "2" by default when component mounts
+  useEffect(() => {
+    setValue("tipo_ficha", "2")
+  }, [setValue])
+
   return (
     <FormSection title="Datos Administrativos">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Controller
-          name="tipo_ficha"
-          control={control}
-          render={({ field }) => (
-            <SelectField
-              name="tipo_ficha"
-              label="Tipo de Ficha"
-              options={TIPO_FICHA_OPTIONS}
-              value={field.value || ""}
-              onChange={field.onChange}
-              error={errors.tipo_ficha?.message}
-            />
-          )}
-        />
-
         <Input
           label="Fecha de Inscripción"
           type="date"
@@ -38,6 +30,7 @@ export const DatosAdministrativosSection = ({ control, register, errors }: Datos
           error={errors.fecha_inscripcion?.message}
           fullWidth
           required
+          disabled
         />
 
         <div className="col-span-2">

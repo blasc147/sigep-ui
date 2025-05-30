@@ -68,6 +68,7 @@ export const DireccionSection = ({
   setMunicipioId,
 }: DireccionSectionProps) => {
   const [usarCallePersonalizada, setUsarCallePersonalizada] = useState(false)
+  const [usarBarrioPersonalizado, setUsarBarrioPersonalizado] = useState(false)
 
   return (
     <FormSection title="Dirección">
@@ -195,21 +196,45 @@ export const DireccionSection = ({
           control={control}
           rules={{ required: "El barrio es requerido" }}
           render={({ field }) => (
-            <SearchableSelect
-              name="barrio"
-              label="Barrio"
-              options={barrios.map((bar) => ({
-                value: bar.id_barrio,
-                label: bar.nombre,
-              }))}
-              value={field.value || ""}
-              onChange={(value) => {
-                field.onChange(value)
-              }}
-              error={errors.barrio?.message}
-              disabled={!municipioId}
-              required
-            />
+            <div className="relative">
+              <div className="flex items-center mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Barrio</label>
+                <div className="ml-auto">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUsarBarrioPersonalizado(!usarBarrioPersonalizado)
+                      setValue("barrio", "") // Limpiar el valor al cambiar
+                    }}
+                    className="text-xs text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-300"
+                  >
+                    {usarBarrioPersonalizado ? "Seleccionar de la lista" : "Ingresar manualmente"}
+                  </button>
+                </div>
+              </div>
+
+              {usarBarrioPersonalizado ? (
+                <Input
+                  {...register("barrio")}
+                  error={errors.barrio?.message}
+                  fullWidth
+                  placeholder="Ingrese el nombre del barrio"
+                />
+              ) : (
+                <SearchableSelect
+                  name="barrio"
+                  options={barrios.map((bar) => ({
+                    value: bar.id_barrio,
+                    label: bar.nombre,
+                  }))}
+                  value={field.value || ""}
+                  onChange={field.onChange}
+                  error={errors.barrio?.message}
+                  disabled={!municipioId}
+                  required
+                />
+              )}
+            </div>
           )}
         />
 

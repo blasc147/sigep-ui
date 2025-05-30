@@ -1,6 +1,6 @@
 "use client"
 
-import type React from "react"
+import React from "react"
 import { useRouter } from "next/router"
 import { useQuery } from "@tanstack/react-query"
 import { MainLayout } from "@/components/layout/MainLayout"
@@ -14,7 +14,7 @@ const BeneficiarioDetailPage = () => {
   const router = useRouter()
   const { id } = router.query
   const { addToast } = useToast()
-  const beneficiarioId = id ? Number(id) : undefined
+  const claveBeneficiario = id ? String(id) : undefined
 
   // Consulta para obtener los datos del beneficiario
   const {
@@ -23,21 +23,21 @@ const BeneficiarioDetailPage = () => {
     error,
     refetch,
   } = useQuery({
-    queryKey: ["beneficiario", beneficiarioId],
-    queryFn: () => beneficiarioService.getBeneficiarioById(beneficiarioId!),
-    enabled: !!beneficiarioId,
+    queryKey: ["beneficiario", claveBeneficiario],
+    queryFn: () => beneficiarioService.getBeneficiarioById(claveBeneficiario!),
+    enabled: !!claveBeneficiario,
   })
 
   // Función para imprimir certificado
   const handlePrintCertificate = async () => {
-    if (!beneficiarioId) return
+    if (!beneficiario?.clave_beneficiario) return
 
     try {
-      const blob = await beneficiarioService.imprimirCertificado(beneficiarioId)
+      const blob = await beneficiarioService.imprimirCertificado(beneficiario.clave_beneficiario)
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
-      a.download = `certificado-beneficiario-${beneficiarioId}.pdf`
+      a.download = `certificado-${beneficiario.clave_beneficiario}.pdf`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
@@ -50,7 +50,8 @@ const BeneficiarioDetailPage = () => {
 
   // Función para ir a la página de edición
   const handleEdit = () => {
-    router.push(`/beneficiarios/${beneficiarioId}/editar`)
+    if (!claveBeneficiario) return
+    router.push(`/beneficiarios/${claveBeneficiario}/editar`)
   }
 
   return (
@@ -101,24 +102,37 @@ const BeneficiarioDetailPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <DetailField label="Apellido" value={beneficiario.apellido_benef} />
                 <DetailField label="Nombre" value={beneficiario.nombre_benef} />
-                <DetailField label="Tipo de Documento" value={beneficiario.tipo_documento} />
+                <DetailField 
+                  label="Tipo de Documento" 
+                  value={beneficiario.tipo_documento === 'DNI' ? 'DNI' : 
+                         beneficiario.tipo_documento === 'LE' ? 'Libreta de Enrolamiento' :
+                         beneficiario.tipo_documento === 'LC' ? 'Libreta Cívica' :
+                         beneficiario.tipo_documento === 'CI' ? 'Cédula de Identidad' :
+                         beneficiario.tipo_documento === 'PAS' ? 'Pasaporte' :
+                         beneficiario.tipo_documento === 'CE' ? 'Cédula de Extranjería' :
+                         beneficiario.tipo_documento === 'DE' ? 'Documento Extranjero' :
+                         beneficiario.tipo_documento === 'OTRO' ? 'Otro' : beneficiario.tipo_documento} 
+                />
                 <DetailField label="Número de Documento" value={beneficiario.numero_doc} />
                 <DetailField label="Sexo" value={beneficiario.sexo === "M" ? "Masculino" : "Femenino"} />
                 <DetailField
                   label="Fecha de Nacimiento"
                   value={new Date(beneficiario.fecha_nacimiento_benef).toLocaleDateString()}
                 />
-                <DetailField label="Categoría" value={`ID: ${beneficiario.id_categoria}`} />
+                <DetailField 
+                  label="Categoría" 
+                  value="Categoría 5"
+                />
               </div>
             </DetailSection>
 
             {/* Lugar de Nacimiento */}
             <DetailSection title="Lugar de Nacimiento">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <DetailField label="País" value={beneficiario.pais_nac} />
-                <DetailField label="Provincia" value={beneficiario.provincia_nac} />
-                <DetailField label="Departamento" value={beneficiario.departamento_nac} />
-                <DetailField label="Localidad" value={beneficiario.localidad_nac} />
+                <DetailField label="País" value={beneficiario.pais_nac?.nombre || beneficiario.pais_nac} />
+                <DetailField label="Provincia" value={beneficiario.provincia_nac?.nombre || beneficiario.provincia_nac} />
+                <DetailField label="Departamento" value={beneficiario.departamento_nac?.nombre || beneficiario.departamento_nac} />
+                <DetailField label="Localidad" value={beneficiario.localidad_nac?.nombre || beneficiario.localidad_nac} />
               </div>
             </DetailSection>
 
@@ -134,18 +148,34 @@ const BeneficiarioDetailPage = () => {
                   )}
                   {beneficiario.indigena === "S" && (
                     <>
-                      <DetailField label="Tribu" value={beneficiario.id_tribu} />
-                      <DetailField label="Lengua" value={beneficiario.id_lengua} />
+                      <DetailField label="Tribu" value={beneficiario.id_tribu?.nombre || beneficiario.id_tribu} />
+                      <DetailField label="Lengua" value={beneficiario.id_lengua?.nombre || beneficiario.id_lengua} />
                     </>
                   )}
                   {beneficiario.alfabeta && (
                     <DetailField label="¿Sabe leer y escribir?" value={beneficiario.alfabeta === "S" ? "Sí" : "No"} />
                   )}
-                  {beneficiario.estudios && <DetailField label="Nivel de Estudios" value={beneficiario.estudios} />}
+                  {beneficiario.estudios && (
+                    <DetailField 
+                      label="Nivel de Estudios" 
+                      value={beneficiario.estudios === "NINGUNO" ? "Ninguno" :
+                             beneficiario.estudios === "PRIMARIO" ? "Primario" :
+                             beneficiario.estudios === "SECUNDARIO" ? "Secundario" :
+                             beneficiario.estudios === "TERCIARIO" ? "Terciario" :
+                             beneficiario.estudios === "UNIVERSITARIO" ? "Universitario" :
+                             beneficiario.estudios === "POSGRADO" ? "Posgrado" :
+                             beneficiario.estudios === "OTRO" ? "Otro" : beneficiario.estudios} 
+                    />
+                  )}
                   {beneficiario.anio_mayor_nivel && (
                     <DetailField label="Año del mayor nivel alcanzado" value={beneficiario.anio_mayor_nivel} />
                   )}
-                  {beneficiario.estadoest && <DetailField label="Estado de Estudios" value={beneficiario.estadoest} />}
+                  {beneficiario.estadoest && (
+                    <DetailField 
+                      label="Estado de Estudios" 
+                      value="Completo"
+                    />
+                  )}
                 </div>
               </DetailSection>
             )}
@@ -249,8 +279,8 @@ const BeneficiarioDetailPage = () => {
             {/* Efectores */}
             <DetailSection title="Efectores">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <DetailField label="Efector de Atención" value={beneficiario.cuie_ea} />
-                <DetailField label="Efector de Alta/Habitual" value={beneficiario.cuie_ah} />
+                <DetailField label="Efector Asignado" value={beneficiario.cuie_ea} />
+                <DetailField label="Efector Habitual" value={beneficiario.cuie_ah} />
                 {beneficiario.cuieefectoracargo && (
                   <DetailField label="Efector a Cargo" value={beneficiario.cuieefectoracargo} />
                 )}
@@ -272,12 +302,12 @@ const BeneficiarioDetailPage = () => {
             {/* Dirección */}
             <DetailSection title="Dirección">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <DetailField label="País" value={beneficiario.pais_residencia || "Argentina"} />
-                <DetailField label="Provincia" value={beneficiario.provincia || "Chaco"} />
-                <DetailField label="Departamento" value={beneficiario.departamento} />
-                <DetailField label="Localidad" value={beneficiario.localidad} />
-                <DetailField label="Municipio" value={beneficiario.municipio} />
-                <DetailField label="Barrio" value={beneficiario.barrio} />
+                <DetailField label="País" value={beneficiario.pais_residencia?.nombre || beneficiario.pais_residencia || "Argentina"} />
+                <DetailField label="Provincia" value={beneficiario.provincia?.nombre || beneficiario.provincia || "Chaco"} />
+                <DetailField label="Departamento" value={beneficiario.departamento?.nombre || beneficiario.departamento} />
+                <DetailField label="Localidad" value={beneficiario.localidad?.nombre || beneficiario.localidad} />
+                <DetailField label="Municipio" value={beneficiario.municipio?.nombre || beneficiario.municipio} />
+                <DetailField label="Barrio" value={beneficiario.barrio?.nombre || beneficiario.barrio} />
                 <DetailField label="Calle" value={beneficiario.calle} />
                 <DetailField label="Número" value={beneficiario.numero_calle} />
                 <DetailField label="Piso" value={beneficiario.piso} />
@@ -285,7 +315,7 @@ const BeneficiarioDetailPage = () => {
                 <DetailField label="Manzana" value={beneficiario.manzana} />
                 <DetailField label="Entre Calle 1" value={beneficiario.entre_calle_1} />
                 <DetailField label="Entre Calle 2" value={beneficiario.entre_calle_2} />
-                <DetailField label="Código Postal" value={beneficiario.cod_pos} />
+                <DetailField label="Código Postal" value={beneficiario.cod_pos?.codigopostal || beneficiario.cod_pos} />
               </div>
             </DetailSection>
 
@@ -353,14 +383,24 @@ const BeneficiarioDetailPage = () => {
             {/* Datos Administrativos */}
             <DetailSection title="Datos Administrativos">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <DetailField label="Tipo de Ficha" value={beneficiario.tipo_ficha} />
                 <DetailField
                   label="Fecha de Inscripción"
                   value={new Date(beneficiario.fecha_inscripcion).toLocaleDateString()}
                 />
                 <DetailField label="Fecha de Carga" value={new Date(beneficiario.fecha_carga).toLocaleDateString()} />
                 <DetailField label="Usuario de Carga" value={beneficiario.usuario_carga} />
-                <DetailField label="Estado" value={beneficiario.activo === "S" ? "Activo" : "Inactivo"} />
+                <DetailField 
+                  label="Estado" 
+                  value={
+                    <span className={`px-2 py-1 rounded-full text-sm font-medium ${
+                      beneficiario.activo === "S" 
+                        ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300" 
+                        : "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300"
+                    }`}>
+                      {beneficiario.activo === "S" ? "Activo" : "Inactivo"}
+                    </span>
+                  } 
+                />
                 <div className="col-span-2">
                   <DetailField label="Observaciones" value={beneficiario.observaciones} />
                 </div>
@@ -402,6 +442,11 @@ const DetailField: React.FC<{ label: string; value: any }> = ({ label, value }) 
   const displayValue = useMemo(() => {
     if (value === undefined || value === null || value === "") {
       return "—"
+    }
+
+    // Si es un elemento React, lo devolvemos directamente
+    if (React.isValidElement(value)) {
+      return value
     }
 
     if (typeof value === "object") {

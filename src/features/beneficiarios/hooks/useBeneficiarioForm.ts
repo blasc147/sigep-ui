@@ -53,6 +53,10 @@ export const useBeneficiarioForm = () => {
       acv: "N" as SiNo,
       hta: "N" as SiNo,
       estatinas: "N" as SiNo,
+      pais_nac: 2, // Argentina
+      provincia_nac: 2, // Chaco
+      pais_residencia: 2, // Argentina
+      provincia: 2, // Chaco
     },
   })
 
@@ -264,6 +268,14 @@ export const useBeneficiarioForm = () => {
     }
   }, [municipioId, setValue])
 
+  // Establecer los IDs iniciales para los selects dependientes
+  useEffect(() => {
+    setPaisId(2) // Argentina
+    setProvinciaNacId(2) // Chaco
+    setPaisResidenciaId(2) // Argentina
+    setProvinciaResidenciaId(2) // Chaco
+  }, [setPaisId, setProvinciaNacId, setPaisResidenciaId, setProvinciaResidenciaId])
+
   // Función para obtener el nombre a partir del ID
   const getNombreById = (
     id: number | string | undefined,
@@ -324,7 +336,11 @@ export const useBeneficiarioForm = () => {
         formData.municipio = getNombreById(formData.municipio, municipios, "id_municipio", "nombre") as any
       }
       if (formData.barrio) {
-        formData.barrio = getNombreById(formData.barrio, barrios, "id_barrio", "nombre") as any
+        // Si el barrio es un número, es un ID y necesitamos obtener el nombre
+        if (typeof formData.barrio === 'number') {
+          formData.barrio = getNombreById(formData.barrio, barrios, "id_barrio", "nombre") as any
+        }
+        // Si es un string, lo dejamos como está (es un ingreso manual)
       }
 
       // Asegurarse de que los campos numéricos sean números

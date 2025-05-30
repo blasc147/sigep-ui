@@ -17,6 +17,7 @@ interface RadioGroupProps {
   error?: string
   required?: boolean
   inline?: boolean
+  disabled?: boolean
 }
 
 export const RadioGroup: React.FC<RadioGroupProps> = ({
@@ -28,6 +29,7 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
   error,
   required = false,
   inline = false,
+  disabled = false,
 }) => {
   return (
     <div className="mb-4">
@@ -46,9 +48,19 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
               value={option.value}
               checked={value === option.value}
               onChange={() => onChange(option.value)}
-              className="h-4 w-4 text-brand-500 focus:ring-brand-500 border-gray-300"
+              className={clsx(
+                "h-4 w-4 text-brand-500 focus:ring-brand-500 border-gray-300",
+                disabled && "opacity-50 cursor-not-allowed"
+              )}
+              disabled={disabled}
             />
-            <label htmlFor={`${name}-${option.value}`} className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+            <label 
+              htmlFor={`${name}-${option.value}`} 
+              className={clsx(
+                "ml-2 block text-sm text-gray-700 dark:text-gray-300",
+                disabled && "opacity-50 cursor-not-allowed"
+              )}
+            >
               {option.label}
             </label>
           </div>

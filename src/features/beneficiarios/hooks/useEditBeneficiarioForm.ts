@@ -164,12 +164,18 @@ export const useEditBeneficiarioForm = (beneficiarioId: number | undefined) => {
         if (data.pais_nac && data.pais_nac.id_pais) {
           setPaisId(data.pais_nac.id_pais)
           setValue("pais_nac", data.pais_nac.id_pais)
+        } else {
+          setPaisId(2) // Argentina
+          setValue("pais_nac", 2)
         }
 
         // Provincia de nacimiento
         if (data.provincia_nac && data.provincia_nac.id_provincia) {
           setProvinciaNacId(data.provincia_nac.id_provincia)
           setValue("provincia_nac", data.provincia_nac.id_provincia)
+        } else {
+          setProvinciaNacId(2) // Chaco
+          setValue("provincia_nac", 2)
         }
 
         // Localidad de nacimiento
@@ -180,16 +186,19 @@ export const useEditBeneficiarioForm = (beneficiarioId: number | undefined) => {
         }
 
         // País de residencia (Argentina por defecto)
-        setPaisResidenciaId(1) // Asumiendo que Argentina tiene ID 1
-        setValue("pais_residencia", 1)
+        setPaisResidenciaId(2) // Argentina
+        setValue("pais_residencia", 2)
 
         // Provincia, departamento, localidad de residencia
         if (data.departamento && data.departamento.id_departamento) {
-          setProvinciaResidenciaId(data.provincia?.id_provincia || 2) // 2 es para Chaco si no viene la provincia
+          setProvinciaResidenciaId(data.provincia?.id_provincia || 2) // 2 es para Chaco
           setValue("provincia", data.provincia?.id_provincia || 2)
 
           setDepartamentoResidenciaId(data.departamento.id_departamento)
           setValue("departamento", data.departamento.id_departamento)
+        } else {
+          setProvinciaResidenciaId(2) // Chaco
+          setValue("provincia", 2)
         }
 
         if (data.localidad && data.localidad.id_localidad) {

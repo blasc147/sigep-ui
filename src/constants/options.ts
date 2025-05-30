@@ -10,8 +10,8 @@ export const TIPO_DOCUMENTO_OPTIONS = [
   ]
   
   export const CLASE_DOCUMENTO_OPTIONS = [
-    { value: "P", label: "Principal" },
-    { value: "S", label: "Secundario" },
+    { value: "P", label: "Propio" },
+    { value: "A", label: "Ajeno" },
   ]
   
   export const SEXO_OPTIONS = [
@@ -33,11 +33,8 @@ export const TIPO_DOCUMENTO_OPTIONS = [
   ]
   
   export const ESTADO_ESTUDIOS_OPTIONS = [
-    { value: "COMPLETO", label: "Completo" },
-    { value: "INCOMPLETO", label: "Incompleto" },
-    { value: "CURSANDO", label: "Cursando" },
-    { value: "ABANDONADO", label: "Abandonado" },
-    { value: "EN_CURSO", label: "En curso" },
+    { value: "C", label: "Completo" },
+    { value: "I", label: "Incompleto" },
   ]
   
   export const RESPONSABLE_OPTIONS = [

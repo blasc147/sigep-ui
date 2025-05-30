@@ -1,32 +1,48 @@
 "use client"
 
-import { Controller } from "react-hook-form"
+import { Controller, useWatch } from "react-hook-form"
 import { FormSection } from "@/features/beneficiarios/components/FormSection"
-import type { Control, FieldErrors } from "react-hook-form"
+import type { Control, FieldErrors, UseFormSetValue } from "react-hook-form"
 import type { BeneficiarioCreateRequest, Efector } from "@/types/beneficiario"
 import { SearchableSelect } from "../SercheableSelect"
 import { LoadingSelect } from "../LoadingSelect"
+import { useEffect } from "react"
 
 interface EfectoresSectionProps {
   control: Control<BeneficiarioCreateRequest>
   errors: FieldErrors<BeneficiarioCreateRequest>
   efectores: Efector[]
   isLoading?: boolean
+  setValue: UseFormSetValue<BeneficiarioCreateRequest>
 }
 
-export const EfectoresSection = ({ control, errors, efectores, isLoading = false }: EfectoresSectionProps) => {
+export const EfectoresSection = ({ control, errors, efectores, isLoading = false, setValue }: EfectoresSectionProps) => {
   // Preparar las opciones para los selectores
   const efectoresOptions = efectores.map((efector) => ({
     value: efector.cuie,
     label: `${efector.nombre} (${efector.cuie}) - ${efector.localidad}`,
   }))
 
+  // Observar el valor del efector asignado
+  const efectorAsignado = useWatch({
+    control,
+    name: "cuie_ea"
+  });
+
+  // Cuando cambia el efector asignado, actualizar los otros efectores
+  useEffect(() => {
+    if (efectorAsignado) {
+      setValue("cuie_ah", efectorAsignado);
+      setValue("cuieefectoracargo", efectorAsignado);
+    }
+  }, [efectorAsignado, setValue]);
+
   if (isLoading) {
     return (
       <FormSection title="Efectores">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <LoadingSelect label="Efector de Atención" required />
-          <LoadingSelect label="Efector de Alta/Habitual" required />
+          <LoadingSelect label="Efector Asignado" required />
+          <LoadingSelect label="Efector Habitual" required />
           <LoadingSelect label="Efector a Cargo" />
         </div>
       </FormSection>
@@ -39,11 +55,11 @@ export const EfectoresSection = ({ control, errors, efectores, isLoading = false
         <Controller
           name="cuie_ea"
           control={control}
-          rules={{ required: "El efector de atención es requerido" }}
+          rules={{ required: "El efector asignado es requerido" }}
           render={({ field }) => (
             <SearchableSelect
               name="cuie_ea"
-              label="Efector de Atención"
+              label="Efector Asignado"
               options={efectoresOptions}
               value={field.value || ""}
               onChange={field.onChange}
@@ -56,11 +72,11 @@ export const EfectoresSection = ({ control, errors, efectores, isLoading = false
         <Controller
           name="cuie_ah"
           control={control}
-          rules={{ required: "El efector de alta/habitual es requerido" }}
+          rules={{ required: "El efector habitual es requerido" }}
           render={({ field }) => (
             <SearchableSelect
               name="cuie_ah"
-              label="Efector de Alta/Habitual"
+              label="Efector Habitual"
               options={efectoresOptions}
               value={field.value || ""}
               onChange={field.onChange}

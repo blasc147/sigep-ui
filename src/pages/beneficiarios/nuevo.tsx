@@ -79,7 +79,13 @@ const NuevoBeneficiarioPage = () => {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {/* Datos básicos */}
-          <DatosBasicosSection control={control} register={register} errors={errors} categorias={categorias} />
+          <DatosBasicosSection 
+            control={control} 
+            register={register} 
+            errors={errors} 
+            categorias={categorias} 
+            setValue={setValue}
+          />
 
           {/* Lugar de nacimiento */}
           <LugarNacimientoSection
@@ -116,7 +122,13 @@ const NuevoBeneficiarioPage = () => {
           )}
 
           {/* Efectores */}
-          <EfectoresSection control={control} errors={errors} efectores={efectores} isLoading={isLoadingEfectores} />
+          <EfectoresSection 
+            control={control} 
+            errors={errors} 
+            efectores={efectores} 
+            isLoading={isLoadingEfectores} 
+            setValue={setValue}
+          />
 
           {/* Convive con adulto (solo para id_categoria 5) */}
           {idCategoria === 5 && <ConvivenciaSection control={control} errors={errors} />}
@@ -158,7 +170,12 @@ const NuevoBeneficiarioPage = () => {
 
 
           {/* Datos administrativos */}
-          <DatosAdministrativosSection control={control} register={register} errors={errors} />
+          <DatosAdministrativosSection 
+            control={control} 
+            register={register} 
+            errors={errors} 
+            setValue={setValue}
+          />
 
           {/* Botones de acción */}
           <div className="mt-8">

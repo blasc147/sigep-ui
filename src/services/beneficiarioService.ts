@@ -44,9 +44,9 @@ export const beneficiarioService = {
     return response.data
   },
 
-  getBeneficiarioById: async (id: number): Promise<Beneficiario> => {
+  getBeneficiarioById: async (claveBeneficiario: string): Promise<Beneficiario> => {
     try {
-      const response = await api.get<Beneficiario>(`/beneficiarios/${id}`)
+      const response = await api.get<Beneficiario>(`/beneficiarios/${claveBeneficiario}`)
       console.log("API response for beneficiario details:", response.data)
       return response.data
     } catch (error) {
@@ -125,8 +125,8 @@ export const beneficiarioService = {
     return response.data
   },
 
-  imprimirCertificado: async (id: number): Promise<Blob> => {
-    const response = await api.get(`/beneficiarios/${id}/certificado`, {
+  imprimirCertificado: async (clavebeneficiario: string): Promise<Blob> => {
+    const response = await api.get(`/beneficiarios/certificado/${clavebeneficiario}`, {
       responseType: "blob",
     })
     return response.data

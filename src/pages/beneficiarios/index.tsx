@@ -116,18 +116,18 @@ const BeneficiariosPage = () => {
   }
 
   // Ver detalles del beneficiario
-  const handleView = (id: number) => {
-    router.push(`/beneficiarios/${id}`)
+  const handleView = (claveBeneficiario: string) => {
+    router.push(`/beneficiarios/${claveBeneficiario}`)
   }
 
   // Imprimir certificado
-  const handlePrintCertificate = async (id: number) => {
+  const handlePrintCertificate = async (clavebeneficiario: string) => {
     try {
-      const blob = await beneficiarioService.imprimirCertificado(id)
+      const blob = await beneficiarioService.imprimirCertificado(clavebeneficiario)
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
-      a.download = `certificado-beneficiario-${id}.pdf`
+      a.download = `certificado-${clavebeneficiario}.pdf`
       document.body.appendChild(a)
       a.click()
       window.URL.revokeObjectURL(url)
@@ -219,7 +219,14 @@ const BeneficiariosPage = () => {
               <tbody className="bg-white divide-y divide-gray-200 dark:bg-gray-900 dark:divide-gray-700">
                 {beneficiarios.length > 0 ? (
                   beneficiarios.map((beneficiario) => (
-                    <tr key={beneficiario.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                    <tr 
+                      key={beneficiario.id} 
+                      className={`hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                        beneficiario.tipo_transaccion === 'B' 
+                          ? 'bg-red-100 dark:bg-red-900/40' 
+                          : ''
+                      }`}
+                    >
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {beneficiario.apellido_benef}, {beneficiario.nombre_benef}
                       </td>
@@ -249,16 +256,7 @@ const BeneficiariosPage = () => {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleEdit(beneficiario.id!)}
-                            aria-label="Editar"
-                            leftIcon={<Edit size={16} />}
-                          >
-                            Editar
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handlePrintCertificate(beneficiario.id!)}
+                            onClick={() => handlePrintCertificate(beneficiario.clave_beneficiario!)}
                             aria-label="Imprimir certificado"
                             leftIcon={<FileText size={16} />}
                           >

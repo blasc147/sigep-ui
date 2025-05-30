@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/Input"
 import { FormSection } from "@/features/beneficiarios/components/FormSection"
 import { RadioGroup } from "@/features/beneficiarios/components/RadioGroup"
 import { SI_NO_OPTIONS } from "@/constants/options"
+import { useState } from "react"
 
 interface FactoresRiesgoSectionProps {
   control: any
@@ -12,7 +13,18 @@ interface FactoresRiesgoSectionProps {
   errors: any
 }
 
+const RISK_LEVELS = [
+  { value: 0, label: "Sin riesgo", color: "bg-green-500" },
+  { value: 1, label: "Riesgo muy bajo", color: "bg-green-400" },
+  { value: 2, label: "Riesgo bajo", color: "bg-yellow-400" },
+  { value: 3, label: "Riesgo moderado", color: "bg-yellow-500" },
+  { value: 4, label: "Riesgo alto", color: "bg-orange-500" },
+  { value: 5, label: "Riesgo muy alto", color: "bg-red-500" },
+]
+
 export const FactoresRiesgoSection = ({ control, register, errors }: FactoresRiesgoSectionProps) => {
+  const [hoveredScore, setHoveredScore] = useState<number | null>(null)
+
   return (
     <FormSection title="Factores de Riesgo">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -112,16 +124,47 @@ export const FactoresRiesgoSection = ({ control, register, errors }: FactoresRie
           )}
         />
 
-        <Input
-          label="Score de Riesgo"
-          type="number"
-          {...register("score_riesgo", {
-            valueAsNumber: true,
-            min: { value: 0, message: "Debe ser mayor o igual a 0" },
-          })}
-          error={errors.score_riesgo?.message}
-          fullWidth
-        />
+        <div className="col-span-2">
+          <Controller
+            name="score_riesgo"
+            control={control}
+            render={({ field }) => (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Score de Riesgo Cardiovascular
+                </label>
+                <div className="flex items-center space-x-2">
+                  {RISK_LEVELS.map((level) => (
+                    <button
+                      key={level.value}
+                      type="button"
+                      className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold transition-all transform hover:scale-110 ${
+                        level.color
+                      } ${
+                        field.value === level.value
+                          ? "ring-4 ring-offset-2 ring-gray-400 dark:ring-gray-600"
+                          : "opacity-70 hover:opacity-100"
+                      }`}
+                      onClick={() => field.onChange(level.value)}
+                      onMouseEnter={() => setHoveredScore(level.value)}
+                      onMouseLeave={() => setHoveredScore(null)}
+                    >
+                      {level.value}
+                    </button>
+                  ))}
+                </div>
+                {hoveredScore !== null && (
+                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                    {RISK_LEVELS.find((level) => level.value === hoveredScore)?.label}
+                  </p>
+                )}
+                {errors.score_riesgo && (
+                  <p className="mt-1 text-sm text-red-500">{errors.score_riesgo.message}</p>
+                )}
+              </div>
+            )}
+          />
+        </div>
       </div>
     </FormSection>
   )
