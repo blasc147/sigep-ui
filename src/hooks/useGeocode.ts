@@ -2,6 +2,15 @@ import { useMutation } from "@tanstack/react-query"
 import { beneficiarioService } from "@/services/beneficiarioService"
 import { useToast } from "@/components/ui/Toast"
 
+interface GeocodeData {
+  calle: string
+  numero: string
+  barrio?: string
+  localidad: string
+  provincia: string
+  pais: string
+}
+
 export const useGeocode = () => {
   const { addToast } = useToast()
 
@@ -20,21 +29,14 @@ export const useGeocode = () => {
     },
   })
 
+  const handleGeocode = (data: GeocodeData) => {
+    geocodeMutation.mutate(data)
+  }
+
   const getPrecisionMessage = (precision: number) => {
     if (precision < 6) return "La precisión de la geocodificación no es buena"
     if (precision < 8) return "La precisión de la geocodificación es aceptable"
     return "La precisión de la geocodificación es muy buena"
-  }
-
-  const handleGeocode = (data: {
-    calle: string
-    numero: string
-    barrio?: string
-    localidad: string
-    provincia: string
-    pais: string
-  }) => {
-    geocodeMutation.mutate(data)
   }
 
   return {

@@ -159,7 +159,14 @@ export const beneficiarioService = {
     precision: number
     direccion_formateada: string
   }> => {
-    const response = await api.post("/beneficiarios/geocode", data)
+    const response = await api.post("/beneficiarios/geocode", {
+      calle: data.calle,
+      numero: data.numero,
+      barrio: data.barrio,
+      localidad: data.localidad,
+      provincia: data.provincia,
+      pais: data.pais
+    })
     return response.data
   },
 }

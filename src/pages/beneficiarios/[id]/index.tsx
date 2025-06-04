@@ -10,7 +10,7 @@ import { ArrowLeft, Edit, FileText, AlertCircle, RefreshCw, UserMinus } from "re
 import { useToast } from "@/components/ui/Toast"
 import { useMemo } from "react"
 import { Dialog } from "@/components/ui/Dialog"
-// import { GeocodeSection } from "@/features/beneficiarios/components/GeocodeSection"
+import { GeocodeSection } from "@/features/beneficiarios/components/GeocodeSection"
 
 const BeneficiarioDetailPage = () => {
   const router = useRouter()
@@ -441,24 +441,26 @@ const BeneficiarioDetailPage = () => {
             )}
 
             {/* Geo-ubicación */}
-            {/* <GeocodeSection
-              calle={beneficiario.calle || ""}
-              numero={beneficiario.numero_calle || ""}
-              barrio={beneficiario.barrio?.nombre || beneficiario.barrio || ""}
-              localidad={beneficiario.localidad?.nombre || beneficiario.localidad || ""}
-              provincia={beneficiario.provincia?.nombre || beneficiario.provincia || "Chaco"}
-              pais={beneficiario.pais_residencia?.nombre || beneficiario.pais_residencia || "Argentina"}
-              ubicacionlatitud={beneficiario.ubicacionlatitud}
-              ubicacionlongitud={beneficiario.ubicacionlongitud}
-              precision={beneficiario.precision}
-              onGeocodeSuccess={(data) => {
-                if (beneficiario) {
-                  beneficiario.ubicacionlatitud = data.latitud
-                  beneficiario.ubicacionlongitud = data.longitud
-                  beneficiario.precision = data.precision
-                }
-              }}
-            /> */}
+            <DetailSection title="Geo-ubicación">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {beneficiario.ubicacionlatitud && beneficiario.ubicacionlongitud ? (
+                  <>
+                    <DetailField label="Latitud" value={beneficiario.ubicacionlatitud} />
+                    <DetailField label="Longitud" value={beneficiario.ubicacionlongitud} />
+                    {beneficiario.precision && (
+                      <DetailField 
+                        label="Precisión" 
+                        value={getPrecisionMessage(beneficiario.precision)} 
+                      />
+                    )}
+                  </>
+                ) : (
+                  <div className="col-span-2">
+                    <p className="text-gray-500 dark:text-gray-400">No hay coordenadas registradas</p>
+                  </div>
+                )}
+              </div>
+            </DetailSection>
 
             {/* Datos Administrativos */}
             <DetailSection title="Datos Administrativos">
