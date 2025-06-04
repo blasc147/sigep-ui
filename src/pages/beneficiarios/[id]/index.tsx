@@ -1,19 +1,22 @@
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import { useRouter } from "next/router"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation } from "@tanstack/react-query"
 import { MainLayout } from "@/components/layout/MainLayout"
 import { Button } from "@/components/ui/Button"
 import { beneficiarioService } from "@/services/beneficiarioService"
-import { ArrowLeft, Edit, FileText, AlertCircle, RefreshCw } from "react-feather"
+import { ArrowLeft, Edit, FileText, AlertCircle, RefreshCw, UserMinus } from "react-feather"
 import { useToast } from "@/components/ui/Toast"
 import { useMemo } from "react"
+import { Dialog } from "@/components/ui/Dialog"
+// import { GeocodeSection } from "@/features/beneficiarios/components/GeocodeSection"
 
 const BeneficiarioDetailPage = () => {
   const router = useRouter()
   const { id } = router.query
   const { addToast } = useToast()
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const claveBeneficiario = id ? String(id) : undefined
 
   // Consulta para obtener los datos del beneficiario
@@ -27,6 +30,41 @@ const BeneficiarioDetailPage = () => {
     queryFn: () => beneficiarioService.getBeneficiarioById(claveBeneficiario!),
     enabled: !!claveBeneficiario,
   })
+
+  const bajaBeneficiarioMutation = useMutation({
+    mutationFn: (clave_beneficiario: string) => beneficiarioService.bajaBeneficiario(clave_beneficiario),
+    onSuccess: () => {
+      addToast("Beneficiario dado de baja correctamente", "success")
+      router.push("/beneficiarios")
+    },
+    onError: (error: any) => {
+      let errorMessage = "Error al dar de baja al beneficiario"
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message
+      }
+      addToast(errorMessage, "error")
+    },
+  })
+
+  /* const geocodeMutation = useMutation({
+    mutationFn: beneficiarioService.geocodeBeneficiario,
+    onSuccess: (data) => {
+      addToast("Geocodificación realizada correctamente", "success")
+      // Actualizar los campos del beneficiario
+      if (beneficiario) {
+        beneficiario.ubicacionlatitud = data.latitud
+        beneficiario.ubicacionlongitud = data.longitud
+        beneficiario.precision = data.precision
+      }
+    },
+    onError: (error: any) => {
+      let errorMessage = "Error al geocodificar la dirección"
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message
+      }
+      addToast(errorMessage, "error")
+    },
+  }) */
 
   // Función para imprimir certificado
   const handlePrintCertificate = async () => {
@@ -54,6 +92,32 @@ const BeneficiarioDetailPage = () => {
     router.push(`/beneficiarios/${claveBeneficiario}/editar`)
   }
 
+  const handleBaja = () => {
+    if (!beneficiario?.id) return
+    bajaBeneficiarioMutation.mutate(beneficiario.id)
+  }
+
+  const handleGeocode = () => {
+    if (!beneficiario) return
+
+    const data = {
+      calle: beneficiario.calle || "",
+      numero: beneficiario.numero_calle || "",
+      barrio: beneficiario.barrio?.nombre || beneficiario.barrio || "",
+      localidad: beneficiario.localidad?.nombre || beneficiario.localidad || "",
+      provincia: beneficiario.provincia?.nombre || beneficiario.provincia || "Chaco",
+      pais: beneficiario.pais_residencia?.nombre || beneficiario.pais_residencia || "Argentina"
+    }
+
+    /* geocodeMutation.mutate(data) */
+  }
+
+  const getPrecisionMessage = (precision: number) => {
+    if (precision < 6) return "La precisión de la geocodificación no es buena"
+    if (precision < 8) return "La precisión de la geocodificación es aceptable"
+    return "La precisión de la geocodificación es muy buena"
+  }
+
   return (
     <MainLayout title="Detalle de Beneficiario">
       <div className="max-w-5xl mx-auto bg-white dark:bg-gray-800 shadow-md rounded-lg p-6">
@@ -68,6 +132,13 @@ const BeneficiarioDetailPage = () => {
             </Button>
             <Button variant="outline" onClick={handlePrintCertificate} leftIcon={<FileText size={16} />}>
               Imprimir Certificado
+            </Button>
+            <Button 
+              variant="danger" 
+              onClick={() => setShowConfirmDialog(true)}
+              leftIcon={<UserMinus size={16} />}
+            >
+              Dar de Baja
             </Button>
           </div>
         </div>
@@ -370,15 +441,24 @@ const BeneficiarioDetailPage = () => {
             )}
 
             {/* Geo-ubicación */}
-            {(beneficiario.ubicacionlatitud || beneficiario.ubicacionlongitud || beneficiario.precision) && (
-              <DetailSection title="Geo-ubicación">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <DetailField label="Latitud" value={beneficiario.ubicacionlatitud} />
-                  <DetailField label="Longitud" value={beneficiario.ubicacionlongitud} />
-                  <DetailField label="Precisión" value={beneficiario.precision} />
-                </div>
-              </DetailSection>
-            )}
+            {/* <GeocodeSection
+              calle={beneficiario.calle || ""}
+              numero={beneficiario.numero_calle || ""}
+              barrio={beneficiario.barrio?.nombre || beneficiario.barrio || ""}
+              localidad={beneficiario.localidad?.nombre || beneficiario.localidad || ""}
+              provincia={beneficiario.provincia?.nombre || beneficiario.provincia || "Chaco"}
+              pais={beneficiario.pais_residencia?.nombre || beneficiario.pais_residencia || "Argentina"}
+              ubicacionlatitud={beneficiario.ubicacionlatitud}
+              ubicacionlongitud={beneficiario.ubicacionlongitud}
+              precision={beneficiario.precision}
+              onGeocodeSuccess={(data) => {
+                if (beneficiario) {
+                  beneficiario.ubicacionlatitud = data.latitud
+                  beneficiario.ubicacionlongitud = data.longitud
+                  beneficiario.precision = data.precision
+                }
+              }}
+            /> */}
 
             {/* Datos Administrativos */}
             <DetailSection title="Datos Administrativos">
@@ -413,6 +493,29 @@ const BeneficiarioDetailPage = () => {
         ) : (
           <div className="text-center py-10">No se encontró información del beneficiario</div>
         )}
+
+        <Dialog
+          isOpen={showConfirmDialog}
+          onClose={() => setShowConfirmDialog(false)}
+          title="Confirmar Baja"
+          description={`¿Está seguro que desea dar de baja al beneficiario ${beneficiario?.apellido_benef} ${beneficiario?.nombre_benef} (DNI: ${beneficiario?.numero_doc})? Esta acción no se puede deshacer.`}
+        >
+          <div className="mt-4 flex justify-end space-x-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmDialog(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="danger"
+              onClick={handleBaja}
+              disabled={bajaBeneficiarioMutation.isPending}
+            >
+              Confirmar Baja
+            </Button>
+          </div>
+        </Dialog>
       </div>
     </MainLayout>
   )

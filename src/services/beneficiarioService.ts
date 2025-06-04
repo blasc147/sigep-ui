@@ -141,4 +141,25 @@ export const beneficiarioService = {
     const response = await api.get<string[]>(`/auxiliary/localidades/${localidadId}/calles`)
     return response.data
   },
+
+  bajaBeneficiario: async (id: number): Promise<void> => {
+    await api.patch(`/beneficiarios/${id}/baja`)
+  },
+
+  geocodeBeneficiario: async (data: {
+    calle: string
+    numero: string
+    barrio?: string
+    localidad: string
+    provincia: string
+    pais: string
+  }): Promise<{
+    latitud: number
+    longitud: number
+    precision: number
+    direccion_formateada: string
+  }> => {
+    const response = await api.post("/beneficiarios/geocode", data)
+    return response.data
+  },
 }

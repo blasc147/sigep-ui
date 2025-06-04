@@ -14,6 +14,7 @@ import { ContactoSection } from "@/features/beneficiarios/components/FormSection
 import { DiscapacidadesSection } from "@/features/beneficiarios/components/FormSections/DiscapacidadesSection"
 import { FactoresRiesgoSection } from "@/features/beneficiarios/components/FormSections/FactoresRiesgoSection"
 import { DatosAdministrativosSection } from "@/features/beneficiarios/components/FormSections/DatosAdministrativosSection"
+// import { GeolocalizacionSection } from "@/features/beneficiarios/components/FormSections/GeolocalizacionSection"
 import { Save, ArrowLeft } from "react-feather"
 import { ErrorSummary } from "@/features/beneficiarios/components/ErrorSummary"
 
@@ -158,6 +159,12 @@ const NuevoBeneficiarioPage = () => {
             municipioId={municipioId}
             setMunicipioId={setMunicipioId}
           />
+
+          {/* Geo-ubicación */}
+          {/* <GeolocalizacionSection
+            formData={control._formValues}
+            onChange={(field, value) => setValue(field, value)}
+          /> */}
 
           {/* Contacto */}
           <ContactoSection register={register} errors={errors} />
