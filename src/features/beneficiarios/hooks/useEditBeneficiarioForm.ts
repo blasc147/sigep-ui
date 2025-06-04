@@ -504,14 +504,60 @@ export const useEditBeneficiarioForm = (beneficiarioId: number | undefined) => {
 
   // Enviar formulario
   const onSubmit = async (data: BeneficiarioCreateRequest) => {
-    if (!beneficiarioId) return
+    if (!beneficiario?.id) return
 
     try {
       // Crear una copia de los datos para modificarlos
       const formData = { ...data }
 
-      // No necesitamos convertir IDs a nombres ya que la API espera los IDs
-      // En lugar de eso, asegurémonos de que todos los campos que deberían ser números sean números
+      // Convertir IDs a nombres para los campos de ubicación
+      // Lugar de nacimiento
+      if (formData.pais_nac) {
+        formData.pais_nac = getNombreById(formData.pais_nac, paises, "id_pais", "nombre") as any
+      }
+      if (formData.provincia_nac) {
+        formData.provincia_nac = getNombreById(formData.provincia_nac, provinciasNac, "id_provincia", "nombre") as any
+      }
+      if (formData.departamento_nac) {
+        formData.departamento_nac = getNombreById(
+          formData.departamento_nac,
+          departamentosNac,
+          "id_departamento",
+          "nombre",
+        ) as any
+      }
+      if (formData.localidad_nac) {
+        formData.localidad_nac = getNombreById(formData.localidad_nac, localidadesNac, "id_localidad", "nombre") as any
+      }
+
+      // Dirección
+      if (formData.pais_residencia) {
+        formData.pais_residencia = getNombreById(formData.pais_residencia, paises, "id_pais", "nombre") as any
+      }
+      if (formData.provincia) {
+        formData.provincia = getNombreById(formData.provincia, provinciasResidencia, "id_provincia", "nombre") as any
+      }
+      if (formData.departamento) {
+        formData.departamento = getNombreById(
+          formData.departamento,
+          departamentosResidencia,
+          "id_departamento",
+          "nombre",
+        ) as any
+      }
+      if (formData.localidad) {
+        formData.localidad = getNombreById(formData.localidad, localidadesResidencia, "id_localidad", "nombre") as any
+      }
+      if (formData.municipio) {
+        formData.municipio = getNombreById(formData.municipio, municipios, "id_municipio", "nombre") as any
+      }
+      if (formData.barrio) {
+        // Si el barrio es un número, es un ID y necesitamos obtener el nombre
+        if (typeof formData.barrio === 'number') {
+          formData.barrio = getNombreById(formData.barrio, barrios, "id_barrio", "nombre") as any
+        }
+        // Si es un string, lo dejamos como está (es un ingreso manual)
+      }
 
       // Asegurarse de que los campos numéricos sean números
       if (typeof formData.id_categoria === "string") {
@@ -526,45 +572,6 @@ export const useEditBeneficiarioForm = (beneficiarioId: number | undefined) => {
         formData.id_lengua = Number(formData.id_lengua)
       }
 
-      // Campos de ubicación de nacimiento
-      if (typeof formData.pais_nac === "string" && formData.pais_nac) {
-        formData.pais_nac = { id_pais: Number(formData.pais_nac) } as any
-      }
-
-      if (typeof formData.provincia_nac === "string" && formData.provincia_nac) {
-        formData.provincia_nac = { id_provincia: Number(formData.provincia_nac) } as any
-      }
-
-      if (typeof formData.departamento_nac === "string" && formData.departamento_nac) {
-        formData.departamento_nac = { id_departamento: Number(formData.departamento_nac) } as any
-      }
-
-      if (typeof formData.localidad_nac === "string" && formData.localidad_nac) {
-        formData.localidad_nac = { id_localidad: Number(formData.localidad_nac) } as any
-      }
-
-      // Campos de ubicación de residencia
-      if (typeof formData.provincia === "string" && formData.provincia) {
-        formData.provincia = { id_provincia: Number(formData.provincia) } as any
-      }
-
-      if (typeof formData.departamento === "string" && formData.departamento) {
-        formData.departamento = { id_departamento: Number(formData.departamento) } as any
-      }
-
-      if (typeof formData.localidad === "string" && formData.localidad) {
-        formData.localidad = { id_localidad: Number(formData.localidad) } as any
-      }
-
-      if (typeof formData.municipio === "string" && formData.municipio) {
-        formData.municipio = { id_municipio: Number(formData.municipio) } as any
-      }
-
-      // Para barrio, que puede ser string o objeto
-      if (typeof formData.barrio === "string" && formData.barrio && !isNaN(Number(formData.barrio))) {
-        formData.barrio = { id_barrio: Number(formData.barrio) } as any
-      }
-
       // Para código postal
       if (typeof formData.cod_pos === "string" && formData.cod_pos) {
         formData.cod_pos = { codigopostal: formData.cod_pos } as any
@@ -572,8 +579,8 @@ export const useEditBeneficiarioForm = (beneficiarioId: number | undefined) => {
 
       console.log("Datos que se enviarán a la API:", formData)
 
-      // Enviar el formulario
-      await updateBeneficiarioMutation.mutateAsync({ id: beneficiarioId, data: formData })
+      // Enviar el formulario usando el ID del beneficiario
+      await updateBeneficiarioMutation.mutateAsync({ id: beneficiario.id, data: formData })
     } catch (error: any) {
       console.error("Error al actualizar beneficiario:", error)
 

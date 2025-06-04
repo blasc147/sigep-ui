@@ -12,27 +12,21 @@ import { useMemo } from "react"
 import { Dialog } from "@/components/ui/Dialog"
 import { GeocodeSection } from "@/features/beneficiarios/components/GeocodeSection"
 
-const BeneficiarioDetailPage = () => {
+export default function BeneficiarioDetailPage() {
   const router = useRouter()
   const { id } = router.query
   const { addToast } = useToast()
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
   const claveBeneficiario = id ? String(id) : undefined
 
-  // Consulta para obtener los datos del beneficiario
-  const {
-    data: beneficiario,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery({
+  const { data: beneficiario, isLoading, error } = useQuery({
     queryKey: ["beneficiario", claveBeneficiario],
     queryFn: () => beneficiarioService.getBeneficiarioById(claveBeneficiario!),
     enabled: !!claveBeneficiario,
   })
 
   const bajaBeneficiarioMutation = useMutation({
-    mutationFn: (clave_beneficiario: string) => beneficiarioService.bajaBeneficiario(clave_beneficiario),
+    mutationFn: (id: number) => beneficiarioService.bajaBeneficiario(id),
     onSuccess: () => {
       addToast("Beneficiario dado de baja correctamente", "success")
       router.push("/beneficiarios")
@@ -88,8 +82,8 @@ const BeneficiarioDetailPage = () => {
 
   // Función para ir a la página de edición
   const handleEdit = () => {
-    if (!claveBeneficiario) return
-    router.push(`/beneficiarios/${claveBeneficiario}/editar`)
+    if (!beneficiario?.clave_beneficiario) return
+    router.push(`/beneficiarios/${beneficiario.clave_beneficiario}/editar`)
   }
 
   const handleBaja = () => {
@@ -589,5 +583,3 @@ const DetailField: React.FC<{ label: string; value: any }> = ({ label, value }) 
     </div>
   )
 }
-
-export default BeneficiarioDetailPage
