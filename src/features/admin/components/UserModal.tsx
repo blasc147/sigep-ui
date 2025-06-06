@@ -56,15 +56,27 @@ export const UserModal = ({ isOpen, onClose, user }: UserModalProps) => {
     },
   })
 
-  // Filtrar efectores según búsqueda
-  const filteredEfectores = efectores.filter((efector: Efector) => {
-    const search = efectorSearch.toLowerCase()
-    return (
-      efector.nombre.toLowerCase().includes(search) ||
-      efector.localidad.toLowerCase().includes(search) ||
-      efector.cuie.toLowerCase().includes(search)
-    )
-  })
+  // Filtrar y ordenar efectores según búsqueda y estado de asignación
+  const filteredEfectores = efectores
+    .filter((efector: Efector) => {
+      const search = efectorSearch.toLowerCase()
+      return (
+        efector.nombre.toLowerCase().includes(search) ||
+        efector.localidad.toLowerCase().includes(search) ||
+        efector.cuie.toLowerCase().includes(search)
+      )
+    })
+    .sort((a: Efector, b: Efector) => {
+      // Primero ordenar por estado de asignación
+      const aAssigned = selectedEfectores.includes(a.cuie)
+      const bAssigned = selectedEfectores.includes(b.cuie)
+      
+      if (aAssigned && !bAssigned) return -1
+      if (!aAssigned && bAssigned) return 1
+      
+      // Si ambos están asignados o no asignados, ordenar por CUIE
+      return a.cuie.localeCompare(b.cuie)
+    })
 
   // Mutación para crear usuario
   const createUserMutation = useMutation({
