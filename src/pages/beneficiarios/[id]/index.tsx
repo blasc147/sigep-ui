@@ -195,9 +195,6 @@ export default function BeneficiarioDetailPage() {
             <DetailSection title="Lugar de Nacimiento">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <DetailField label="País" value={beneficiario.pais_nac?.nombre || beneficiario.pais_nac} />
-                <DetailField label="Provincia" value={beneficiario.provincia_nac?.nombre || beneficiario.provincia_nac} />
-                <DetailField label="Departamento" value={beneficiario.departamento_nac?.nombre || beneficiario.departamento_nac} />
-                <DetailField label="Localidad" value={beneficiario.localidad_nac?.nombre || beneficiario.localidad_nac} />
               </div>
             </DetailSection>
 

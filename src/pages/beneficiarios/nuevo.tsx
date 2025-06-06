@@ -93,15 +93,8 @@ const NuevoBeneficiarioPage = () => {
             control={control}
             errors={errors}
             paises={paises}
-            provinciasNac={provinciasNac}
-            departamentosNac={departamentosNac}
-            localidadesNac={localidadesNac}
             paisId={paisId}
             setPaisId={setPaisId}
-            provinciaNacId={provinciaNacId}
-            setProvinciaNacId={setProvinciaNacId}
-            departamentoNacId={departamentoNacId}
-            setDepartamentoNacId={setDepartamentoNacId}
           />
 
           {/* Datos educativos */}
