@@ -4,7 +4,7 @@ export type Sexo = "M" | "F"
 export type SiNo = "S" | "N"
 export type Responsable = "MADRE" | "PADRE" | "TUTOR" | "OTRO"
 export type TipoDocumento = "DNI" | "LE" | "LC" | "PASAPORTE"
-export type NivelEstudios = "PRIMARIO" | "SECUNDARIO" | "UNIVERSITARIO" | "NINGUNO" | "OTRO"
+export type NivelEstudios = "PRIMARIO" | "SECUNDARIO" | "UNIVERSITARIO" | "NINGUNO"
 export type EstadoEstudios = "COMPLETO" | "INCOMPLETO" | "CURSANDO" | "ABANDONADO" | "EN_CURSO"
 export type TipoFicha = "1" | "2" | "3"
 

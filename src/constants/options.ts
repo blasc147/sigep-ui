@@ -27,7 +27,6 @@ export const NIVEL_ESTUDIOS_OPTIONS = [
     { value: "SECUNDARIO", label: "Secundario" },
     { value: "UNIVERSITARIO", label: "Universitario" },
     { value: "NINGUNO", label: "Ninguno" },
-    { value: "OTRO", label: "Otro" },
 ]
   
 export const ESTADO_ESTUDIOS_OPTIONS = [

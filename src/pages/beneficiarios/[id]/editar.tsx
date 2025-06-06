@@ -152,6 +152,9 @@ const EditarBeneficiarioPage = () => {
               paises={paises}
               paisId={paisId}
               setPaisId={setPaisId}
+              tribus={tribus}
+              lenguas={lenguas}
+              indigena={indigena}
             />
 
             {/* Datos educativos */}
@@ -159,9 +162,6 @@ const EditarBeneficiarioPage = () => {
               control={control}
               register={register}
               errors={errors}
-              indigena={indigena}
-              tribus={tribus}
-              lenguas={lenguas}
             />
 
             {/* Datos del responsable */}
