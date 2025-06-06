@@ -62,9 +62,9 @@ export const userService = {
     await api.post("/users/assign-efectores", data)
   },
 
-  // Obtener efectores de un usuario
-  getUserEfectores: async (id: string): Promise<string[]> => {
-    const response = await api.get<string[]>(`/users/${id}/efectores`)
+  // Obtener efectores del usuario actual
+  getCurrentUserEfectores: async (): Promise<Efector[]> => {
+    const response = await api.get<Efector[]>("/users/me/efectores")
     return response.data
   },
 

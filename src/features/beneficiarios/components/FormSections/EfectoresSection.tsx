@@ -7,6 +7,7 @@ import type { BeneficiarioCreateRequest, Efector } from "@/types/beneficiario"
 import { SearchableSelect } from "../SercheableSelect"
 import { LoadingSelect } from "../LoadingSelect"
 import { useEffect } from "react"
+import { useAuth } from "@/hooks/useAuth"
 
 interface EfectoresSectionProps {
   control: Control<BeneficiarioCreateRequest>
@@ -17,8 +18,13 @@ interface EfectoresSectionProps {
 }
 
 export const EfectoresSection = ({ control, errors, efectores, isLoading = false, setValue }: EfectoresSectionProps) => {
+  const { user } = useAuth()
+
+  // Filtrar los efectores que están asignados al usuario
+  const userEfectores = efectores.filter(efector => user?.cuies?.includes(efector.cuie))
+
   // Preparar las opciones para los selectores
-  const efectoresOptions = efectores.map((efector) => ({
+  const efectoresOptions = userEfectores.map((efector) => ({
     value: efector.cuie,
     label: `${efector.nombre} (${efector.cuie}) - ${efector.localidad}`,
   }))
