@@ -174,6 +174,7 @@ const EditarBeneficiarioPage = () => {
                 register={register}
                 errors={errors}
                 menorEmbarazada={menorEmbarazada}
+                setValue={setValue}
               />
             )}
 

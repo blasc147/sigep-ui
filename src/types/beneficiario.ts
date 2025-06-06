@@ -110,7 +110,6 @@ export interface Beneficiario {
   fecha_diagnostico_embarazo?: string
   semanas_embarazo?: number
   fecha_probable_parto?: string
-  fecha_efectiva_parto?: string
   fum?: string
 
   // Efectores

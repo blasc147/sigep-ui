@@ -112,7 +112,13 @@ const NuevoBeneficiarioPage = () => {
 
           {/* Embarazo (solo para sexo F) */}
           {sexo === "F" && (
-            <EmbarazoSection control={control} register={register} errors={errors} menorEmbarazada={menorEmbarazada} />
+            <EmbarazoSection
+              control={control}
+              register={register}
+              errors={errors}
+              menorEmbarazada={menorEmbarazada}
+              setValue={setValue}
+            />
           )}
 
           {/* Efectores */}
