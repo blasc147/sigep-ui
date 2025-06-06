@@ -573,8 +573,8 @@ export const useEditBeneficiarioForm = (beneficiarioId: number | undefined) => {
       }
 
       // Para código postal
-      if (typeof formData.cod_pos === "string" && formData.cod_pos) {
-        formData.cod_pos = { codigopostal: formData.cod_pos } as any
+      if (formData.cod_pos) {
+        formData.cod_pos = typeof formData.cod_pos === 'object' ? formData.cod_pos.codigopostal : formData.cod_pos
       }
 
       console.log("Datos que se enviarán a la API:", formData)

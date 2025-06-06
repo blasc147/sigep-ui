@@ -356,6 +356,13 @@ export const useBeneficiarioForm = () => {
         formData.id_lengua = Number(formData.id_lengua)
       }
 
+      // Para código postal
+      if (formData.cod_pos) {
+        formData.cod_pos = typeof formData.cod_pos === 'object' ? formData.cod_pos.codigopostal : formData.cod_pos
+      }
+
+      console.log("Datos que se enviarán a la API:", formData)
+
       // Enviar el formulario
       await createBeneficiarioMutation.mutateAsync(formData)
     } catch (error: any) {
