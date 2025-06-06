@@ -6,7 +6,7 @@ import { useRouter } from "next/router"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import { useToast } from "@/components/ui/Toast"
 import { beneficiarioService } from "@/services/beneficiarioService"
-import type { BeneficiarioCreateRequest, SiNo, Sexo, Responsable, ClaseDocumento } from "@/types/beneficiario"
+import type { BeneficiarioCreateRequest, SiNo, Sexo, Responsable, ClaseDocumento, TipoDocumento } from "@/types/beneficiario"
 
 export const useBeneficiarioForm = () => {
   const router = useRouter()
@@ -37,6 +37,7 @@ export const useBeneficiarioForm = () => {
   } = useForm<BeneficiarioCreateRequest>({
     defaultValues: {
       clase_documento_benef: "P" as ClaseDocumento,
+      tipo_documento: "DNI" as TipoDocumento,
       sexo: "M" as Sexo,
       fecha_inscripcion: currentDate,
       indigena: "N" as SiNo,
@@ -59,6 +60,13 @@ export const useBeneficiarioForm = () => {
       provincia: 2, // Chaco
     },
   })
+
+  // Establecer valores por defecto al montar el componente
+  useEffect(() => {
+    setValue("tipo_documento", "DNI" as TipoDocumento)
+    setValue("provincia", 2) // Establecer provincia por defecto
+    setProvinciaResidenciaId(2) // Establecer el ID de provincia por defecto
+  }, [setValue])
 
   // Valores observados para renderizado condicional
   const sexo = watch("sexo") as Sexo

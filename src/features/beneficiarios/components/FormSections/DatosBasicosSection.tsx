@@ -80,7 +80,7 @@ export const DatosBasicosSection = ({ control, register, errors, categorias, set
               name="tipo_documento"
               label="Tipo de Documento"
               options={TIPO_DOCUMENTO_OPTIONS}
-              value={field.value || "DNI"}
+              value={field.value}
               onChange={field.onChange}
               error={errors.tipo_documento?.message}
               required

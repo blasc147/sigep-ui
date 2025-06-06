@@ -107,7 +107,7 @@ export const DireccionSection = ({
                 value: prov.id_provincia,
                 label: prov.nombre,
               }))}
-              value={field.value || ""}
+              value={field.value}
               onChange={(value) => {
                 field.onChange(value)
                 setProvinciaResidenciaId(value ? Number(value) : null)
