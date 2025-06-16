@@ -133,20 +133,6 @@ export const Sidebar: React.FC = () => {
                   active={isActive("/beneficiarios") && !isActive("/beneficiarios/nuevo")}
                   onClick={() => setIsOpen(false)}
                 />
-                <NavItem
-                  href="/beneficiarios/nuevo"
-                  icon={<UserPlus size={20} />}
-                  title="Inscribir"
-                  active={isActive("/beneficiarios/nuevo")}
-                  onClick={() => setIsOpen(false)}
-                />
-                <NavItem
-                  href="/beneficiarios/certificados"
-                  icon={<FileText size={20} />}
-                  title="Certificados"
-                  active={isActive("/beneficiarios/certificados")}
-                  onClick={() => setIsOpen(false)}
-                />
               </>
             )}
 

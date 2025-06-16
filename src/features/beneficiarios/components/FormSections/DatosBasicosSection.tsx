@@ -33,6 +33,23 @@ export const DatosBasicosSection = ({ control, register, errors, categorias, set
     }
   }, [fechaNacimiento, categoriaId, setValue]);
 
+  // Función para validar la fecha de nacimiento
+  const validateBirthDate = (date: string) => {
+    const selectedDate = new Date(date)
+    const today = new Date()
+    
+    // Validar que la fecha no sea futura
+    if (selectedDate > today) {
+      return "La fecha de nacimiento no puede ser futura"
+    }
+    
+    return true
+  }
+
+  // Calcular la fecha máxima (hoy) para el date picker
+  const today = new Date()
+  const maxDate = today.toISOString().split('T')[0]
+
   return (
     <FormSection title="Datos Básicos">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -101,10 +118,14 @@ export const DatosBasicosSection = ({ control, register, errors, categorias, set
         <Input
           label="Fecha de Nacimiento"
           type="date"
-          {...register("fecha_nacimiento_benef", { required: "La fecha de nacimiento es requerida" })}
+          {...register("fecha_nacimiento_benef", { 
+            required: "La fecha de nacimiento es requerida",
+            validate: validateBirthDate
+          })}
           error={errors.fecha_nacimiento_benef?.message}
           fullWidth
           required
+          max={maxDate}
         />
 
         <Controller

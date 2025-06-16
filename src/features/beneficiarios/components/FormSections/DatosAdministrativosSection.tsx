@@ -20,17 +20,48 @@ export const DatosAdministrativosSection = ({ control, register, errors, setValu
     setValue("tipo_ficha", "2")
   }, [setValue])
 
+  // Función para validar la fecha de inscripción
+  const validateInscriptionDate = (date: string) => {
+    const selectedDate = new Date(date)
+    const today = new Date()
+    const firstDayOfPreviousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+    
+    // Validar que la fecha no sea futura
+    if (selectedDate > today) {
+      return "La fecha de inscripción no puede ser futura"
+    }
+    
+    // Validar que la fecha esté en el mes actual o en el mes anterior
+    if (selectedDate < firstDayOfPreviousMonth) {
+      return "La fecha de inscripción debe estar en el mes actual o en el mes anterior"
+    }
+    
+    return true
+  }
+
+  // Calcular las fechas mínima y máxima para el date picker
+  const today = new Date()
+  const firstDayOfPreviousMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1)
+  
+  // Formatear las fechas para el input type="date" (YYYY-MM-DD)
+  const minDate = firstDayOfPreviousMonth.toISOString().split('T')[0]
+  const maxDate = today.toISOString().split('T')[0]
+
   return (
     <FormSection title="Datos Administrativos">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Input
           label="Fecha de Inscripción"
           type="date"
-          {...register("fecha_inscripcion", { required: "La fecha de inscripción es requerida" })}
+          {...register("fecha_inscripcion", { 
+            required: "La fecha de inscripción es requerida",
+            validate: validateInscriptionDate
+          })}
           error={errors.fecha_inscripcion?.message}
           fullWidth
           required
-          disabled
+          min={minDate}
+          max={maxDate}
         />
 
         <div className="col-span-2">

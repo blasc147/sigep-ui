@@ -32,13 +32,13 @@ export const EfectoresSection = ({ control, errors, efectores, isLoading = false
   // Observar el valor del efector asignado
   const efectorAsignado = useWatch({
     control,
-    name: "cuie_ea"
+    name: "cuie_ah"
   });
 
   // Cuando cambia el efector asignado, actualizar los otros efectores
   useEffect(() => {
     if (efectorAsignado) {
-      setValue("cuie_ah", efectorAsignado);
+      setValue("cuie_ea", efectorAsignado);
       setValue("cuieefectoracargo", efectorAsignado);
     }
   }, [efectorAsignado, setValue]);
@@ -47,9 +47,7 @@ export const EfectoresSection = ({ control, errors, efectores, isLoading = false
     return (
       <FormSection title="Efectores">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <LoadingSelect label="Efector Asignado" required />
           <LoadingSelect label="Efector Habitual" required />
-          <LoadingSelect label="Efector a Cargo" />
         </div>
       </FormSection>
     )
@@ -58,23 +56,6 @@ export const EfectoresSection = ({ control, errors, efectores, isLoading = false
   return (
     <FormSection title="Efectores">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Controller
-          name="cuie_ea"
-          control={control}
-          rules={{ required: "El efector asignado es requerido" }}
-          render={({ field }) => (
-            <SearchableSelect
-              name="cuie_ea"
-              label="Efector Asignado"
-              options={efectoresOptions}
-              value={field.value || ""}
-              onChange={field.onChange}
-              error={errors.cuie_ea?.message}
-              required
-            />
-          )}
-        />
-
         <Controller
           name="cuie_ah"
           control={control}
@@ -88,21 +69,6 @@ export const EfectoresSection = ({ control, errors, efectores, isLoading = false
               onChange={field.onChange}
               error={errors.cuie_ah?.message}
               required
-            />
-          )}
-        />
-
-        <Controller
-          name="cuieefectoracargo"
-          control={control}
-          render={({ field }) => (
-            <SearchableSelect
-              name="cuieefectoracargo"
-              label="Efector a Cargo"
-              options={efectoresOptions}
-              value={field.value || ""}
-              onChange={field.onChange}
-              error={errors.cuieefectoracargo?.message}
             />
           )}
         />
