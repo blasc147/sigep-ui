@@ -18,9 +18,15 @@ interface ResponsableSectionProps {
   register: any
   errors: any
   responsable: string
+  idCategoria?: number
 }
 
-export const ResponsableSection = ({ control, register, errors, responsable }: ResponsableSectionProps) => {
+export const ResponsableSection = ({ control, register, errors, responsable, idCategoria }: ResponsableSectionProps) => {
+  // Si la categoría es 6 (Mayor de 19 años), no mostrar la sección
+  if (idCategoria === 6) {
+    return null
+  }
+
   return (
     <FormSection title="Datos del Responsable">
       <Controller

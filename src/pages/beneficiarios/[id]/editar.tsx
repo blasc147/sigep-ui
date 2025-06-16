@@ -165,7 +165,13 @@ const EditarBeneficiarioPage = () => {
             />
 
             {/* Datos del responsable */}
-            <ResponsableSection control={control} register={register} errors={errors} responsable={responsable} />
+            <ResponsableSection 
+              control={control} 
+              register={register} 
+              errors={errors} 
+              responsable={responsable} 
+              idCategoria={idCategoria}
+            />
 
             {/* Embarazo (solo para sexo F) */}
             {sexo === "F" && (
