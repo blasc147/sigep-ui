@@ -59,9 +59,9 @@ export interface Beneficiario {
 
   // Lugar de nacimiento - ahora con objetos anidados
   pais_nac: BeneficiarioResponsePaisNac | number // ID del país o objeto
-  provincia_nac?: BeneficiarioResponseProvinciaNac | number // ID o objeto
-  departamento_nac?: BeneficiarioResponseDepartamento | number // ID o objeto
-  localidad_nac?: BeneficiarioResponseLocalidadNac | number // ID o objeto
+  provincia_nac?: BeneficiarioResponseProvinciaNac | number | undefined // ID o objeto
+  departamento_nac?: BeneficiarioResponseDepartamento | number | undefined // ID o objeto
+  localidad_nac?: BeneficiarioResponseLocalidadNac | number | undefined // ID o objeto
 
   // Datos educativos
   indigena?: SiNo
@@ -122,10 +122,10 @@ export interface Beneficiario {
 
   // Dirección - actualizada con objetos anidados
   pais_residencia: number | string // ID del país o nombre
-  provincia: BeneficiarioResponseProvinciaNac | number // ID o objeto
-  departamento: BeneficiarioResponseDepartamento | number // ID o objeto
-  localidad: BeneficiarioResponseLocalidad | number // ID o objeto
-  municipio: BeneficiarioResponseMunicipio | number // ID o objeto
+  provincia: BeneficiarioResponseProvinciaNac | number | undefined // ID o objeto
+  departamento: BeneficiarioResponseDepartamento | number | undefined // ID o objeto
+  localidad: BeneficiarioResponseLocalidad | number | undefined // ID o objeto
+  municipio: BeneficiarioResponseMunicipio | number | undefined // ID o objeto
   barrio: any // Puede ser string, número u objeto
   calle?: string
   numero_calle?: string
@@ -134,7 +134,7 @@ export interface Beneficiario {
   manzana?: string
   entre_calle_1?: string
   entre_calle_2?: string
-  cod_pos: BeneficiarioResponseCodPos | string // Objeto o string
+  cod_pos: BeneficiarioResponseCodPos | string | undefined // Objeto, string o undefined
 
   // Contacto
   telefono?: string

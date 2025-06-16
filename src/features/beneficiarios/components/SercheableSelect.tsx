@@ -6,15 +6,15 @@ import { clsx } from "clsx"
 import { Search, X, ChevronDown, ChevronUp } from "react-feather"
 
 export interface SelectOption {
-  value: string | number
+  value: string | number | undefined
   label: string
 }
 
 interface SearchableSelectProps {
   name: string
   options: SelectOption[]
-  value: string | number
-  onChange: (value: string | number) => void
+  value: string | number | undefined
+  onChange: (value: string | number | undefined) => void
   label?: string
   placeholder?: string
   error?: string
@@ -81,7 +81,6 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 
   // Manejar la selección de una opción
   const handleSelect = (option: SelectOption) => {
-    // Pasar directamente el valor sin ninguna transformación
     onChange(option.value)
     setIsOpen(false)
     setSearchTerm("")
@@ -103,7 +102,7 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
   // Limpiar la selección
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation()
-    onChange("")
+    onChange(undefined)
   }
 
   return (

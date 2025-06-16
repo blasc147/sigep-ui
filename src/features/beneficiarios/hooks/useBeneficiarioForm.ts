@@ -55,18 +55,18 @@ export const useBeneficiarioForm = () => {
       hta: "N" as SiNo,
       estatinas: "N" as SiNo,
       pais_nac: 2, // Argentina
-      provincia_nac: 2, // Chaco
+      provincia_nac: undefined, // Se establecerá cuando se carguen las provincias
+      departamento_nac: undefined,
+      localidad_nac: undefined,
       pais_residencia: 2, // Argentina
-      provincia: 2, // Chaco
+      provincia: undefined, // Se establecerá cuando se carguen las provincias
+      departamento: undefined,
+      localidad: undefined,
+      municipio: undefined,
+      barrio: undefined,
+      cod_pos: undefined, // Puede ser string, objeto o undefined
     },
   })
-
-  // Establecer valores por defecto al montar el componente
-  useEffect(() => {
-    setValue("tipo_documento", "DNI" as TipoDocumento)
-    setValue("provincia", 2) // Establecer provincia por defecto
-    setProvinciaResidenciaId(2) // Establecer el ID de provincia por defecto
-  }, [setValue])
 
   // Valores observados para renderizado condicional
   const sexo = watch("sexo") as Sexo
@@ -83,61 +83,61 @@ export const useBeneficiarioForm = () => {
 
   const { data: provinciasNac = [] } = useQuery({
     queryKey: ["provinciasNac", paisId],
-    queryFn: () => beneficiarioService.getProvincias(paisId!),
+    queryFn: () => beneficiarioService.getProvincias(paisId!.toString()),
     enabled: !!paisId,
   })
 
   const { data: departamentosNac = [] } = useQuery({
     queryKey: ["departamentosNac", provinciaNacId],
-    queryFn: () => beneficiarioService.getDepartamentos(provinciaNacId!),
+    queryFn: () => beneficiarioService.getDepartamentos(provinciaNacId!.toString()),
     enabled: !!provinciaNacId,
   })
 
   const { data: localidadesNac = [] } = useQuery({
     queryKey: ["localidadesNac", departamentoNacId],
-    queryFn: () => beneficiarioService.getLocalidades(departamentoNacId!),
+    queryFn: () => beneficiarioService.getLocalidades(departamentoNacId!.toString()),
     enabled: !!departamentoNacId,
   })
 
   const { data: provinciasResidencia = [] } = useQuery({
     queryKey: ["provinciasResidencia", paisResidenciaId],
-    queryFn: () => beneficiarioService.getProvincias(paisResidenciaId!),
+    queryFn: () => beneficiarioService.getProvincias(paisResidenciaId!.toString()),
     enabled: !!paisResidenciaId,
   })
 
   const { data: departamentosResidencia = [] } = useQuery({
     queryKey: ["departamentosResidencia", provinciaResidenciaId],
-    queryFn: () => beneficiarioService.getDepartamentos(provinciaResidenciaId!),
+    queryFn: () => beneficiarioService.getDepartamentos(provinciaResidenciaId!.toString()),
     enabled: !!provinciaResidenciaId,
   })
 
   const { data: localidadesResidencia = [] } = useQuery({
     queryKey: ["localidadesResidencia", departamentoResidenciaId],
-    queryFn: () => beneficiarioService.getLocalidades(departamentoResidenciaId!),
+    queryFn: () => beneficiarioService.getLocalidades(departamentoResidenciaId!.toString()),
     enabled: !!departamentoResidenciaId,
   })
 
   const { data: municipios = [] } = useQuery({
     queryKey: ["municipios", localidadResidenciaId],
-    queryFn: () => beneficiarioService.getMunicipios(localidadResidenciaId!),
+    queryFn: () => beneficiarioService.getMunicipios(localidadResidenciaId!.toString()),
     enabled: !!localidadResidenciaId,
   })
 
   const { data: barrios = [] } = useQuery({
     queryKey: ["barrios", municipioId],
-    queryFn: () => beneficiarioService.getBarrios(municipioId!),
+    queryFn: () => beneficiarioService.getBarrios(municipioId!.toString()),
     enabled: !!municipioId,
   })
 
   const { data: codigosPostales = [] } = useQuery({
     queryKey: ["codigosPostales", localidadResidenciaId],
-    queryFn: () => beneficiarioService.getCodigosPostales(localidadResidenciaId!),
+    queryFn: () => beneficiarioService.getCodigosPostales(localidadResidenciaId!.toString()),
     enabled: !!localidadResidenciaId,
   })
 
   const { data: calles = [] } = useQuery({
     queryKey: ["calles", localidadResidenciaId],
-    queryFn: () => beneficiarioService.getCalles(localidadResidenciaId!),
+    queryFn: () => beneficiarioService.getCalles(localidadResidenciaId!.toString()),
     enabled: !!localidadResidenciaId,
   })
 
@@ -162,6 +162,20 @@ export const useBeneficiarioForm = () => {
     queryKey: ["efectores"],
     queryFn: beneficiarioService.getEfectores,
   })
+
+  // Establecer valores por defecto al montar el componente
+  useEffect(() => {
+    setValue("tipo_documento", "DNI" as TipoDocumento)
+    
+    // Establecer provincia por defecto solo cuando las provincias estén cargadas
+    if (provinciasResidencia.length > 0) {
+      const provinciaChaco = provinciasResidencia.find(p => p.id_provincia === 2)
+      if (provinciaChaco) {
+        setValue("provincia", provinciaChaco.id_provincia)
+        setProvinciaResidenciaId(2)
+      }
+    }
+  }, [setValue, provinciasResidencia])
 
   // Mutación para crear beneficiario
   const createBeneficiarioMutation = useMutation({
@@ -224,7 +238,7 @@ export const useBeneficiarioForm = () => {
       setValue("localidad", undefined)
       setValue("municipio", undefined)
       setValue("barrio", undefined)
-      setValue("cod_pos", "")
+      setValue("cod_pos", undefined)
       setProvinciaResidenciaId(null)
       setDepartamentoResidenciaId(null)
       setLocalidadResidenciaId(null)
@@ -238,7 +252,7 @@ export const useBeneficiarioForm = () => {
       setValue("localidad", undefined)
       setValue("municipio", undefined)
       setValue("barrio", undefined)
-      setValue("cod_pos", "")
+      setValue("cod_pos", undefined)
       setDepartamentoResidenciaId(null)
       setLocalidadResidenciaId(null)
       setMunicipioId(null)
@@ -250,7 +264,7 @@ export const useBeneficiarioForm = () => {
       setValue("localidad", undefined)
       setValue("municipio", undefined)
       setValue("barrio", undefined)
-      setValue("cod_pos", "")
+      setValue("cod_pos", undefined)
       setLocalidadResidenciaId(null)
       setMunicipioId(null)
     }
@@ -260,7 +274,7 @@ export const useBeneficiarioForm = () => {
     if (localidadResidenciaId === null) {
       setValue("municipio", undefined)
       setValue("barrio", undefined)
-      setValue("cod_pos", "")
+      setValue("cod_pos", undefined)
       setMunicipioId(null)
     } else {
       // Si hay un solo código postal disponible, establecerlo automáticamente
@@ -389,6 +403,106 @@ export const useBeneficiarioForm = () => {
       }
 
       addToast(errorMessage, "error")
+    }
+  }
+
+  const handleProvinciaNacChange = (value: number | BeneficiarioResponseProvinciaNac | undefined) => {
+    if (typeof value === "number") {
+      setValue("provincia_nac", value)
+      setProvinciaNacId(value)
+    } else if (value) {
+      setValue("provincia_nac", value.id_provincia)
+      setProvinciaNacId(value.id_provincia)
+    } else {
+      setValue("provincia_nac", undefined)
+      setProvinciaNacId(undefined)
+    }
+    setValue("departamento_nac", undefined)
+    setValue("localidad_nac", undefined)
+  }
+
+  const handleDepartamentoNacChange = (value: number | BeneficiarioResponseDepartamento | undefined) => {
+    if (typeof value === "number") {
+      setValue("departamento_nac", value)
+      setDepartamentoNacId(value)
+    } else if (value) {
+      setValue("departamento_nac", value.id_departamento)
+      setDepartamentoNacId(value.id_departamento)
+    } else {
+      setValue("departamento_nac", undefined)
+      setDepartamentoNacId(undefined)
+    }
+    setValue("localidad_nac", undefined)
+  }
+
+  const handleLocalidadNacChange = (value: number | BeneficiarioResponseLocalidad | undefined) => {
+    if (typeof value === "number") {
+      setValue("localidad_nac", value)
+      setLocalidadNacId(value)
+    } else if (value) {
+      setValue("localidad_nac", value.id_localidad)
+      setLocalidadNacId(value.id_localidad)
+    } else {
+      setValue("localidad_nac", undefined)
+      setLocalidadNacId(undefined)
+    }
+  }
+
+  const handleProvinciaResidenciaChange = (value: number | BeneficiarioResponseProvinciaNac | undefined) => {
+    if (typeof value === "number") {
+      setValue("provincia", value)
+      setProvinciaResidenciaId(value)
+    } else if (value) {
+      setValue("provincia", value.id_provincia)
+      setProvinciaResidenciaId(value.id_provincia)
+    } else {
+      setValue("provincia", undefined)
+      setProvinciaResidenciaId(undefined)
+    }
+    setValue("departamento", undefined)
+    setValue("localidad", undefined)
+    setValue("municipio", undefined)
+  }
+
+  const handleDepartamentoResidenciaChange = (value: number | BeneficiarioResponseDepartamento | undefined) => {
+    if (typeof value === "number") {
+      setValue("departamento", value)
+      setDepartamentoResidenciaId(value)
+    } else if (value) {
+      setValue("departamento", value.id_departamento)
+      setDepartamentoResidenciaId(value.id_departamento)
+    } else {
+      setValue("departamento", undefined)
+      setDepartamentoResidenciaId(undefined)
+    }
+    setValue("localidad", undefined)
+    setValue("municipio", undefined)
+  }
+
+  const handleLocalidadResidenciaChange = (value: number | BeneficiarioResponseLocalidad | undefined) => {
+    if (typeof value === "number") {
+      setValue("localidad", value)
+      setLocalidadResidenciaId(value)
+    } else if (value) {
+      setValue("localidad", value.id_localidad)
+      setLocalidadResidenciaId(value.id_localidad)
+    } else {
+      setValue("localidad", undefined)
+      setLocalidadResidenciaId(undefined)
+    }
+    setValue("municipio", undefined)
+  }
+
+  const handleMunicipioChange = (value: number | BeneficiarioResponseMunicipio | undefined) => {
+    if (typeof value === "number") {
+      setValue("municipio", value)
+      setMunicipioId(value)
+    } else if (value) {
+      setValue("municipio", value.id_municipio)
+      setMunicipioId(value.id_municipio)
+    } else {
+      setValue("municipio", undefined)
+      setMunicipioId(undefined)
     }
   }
 
