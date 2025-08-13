@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form"
 import { useRouter } from "next/router"
 import Link from "next/link"
 import { Input } from "@/components/ui/Input"
+import { PasswordInput } from "@/components/ui/PasswordInput"
 import { Button } from "@/components/ui/Button"
 import { authService } from "@/services/authService"
 import { Lock } from "react-feather"
@@ -71,9 +72,8 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ token }) =
           <p className="text-sm text-gray-600 dark:text-gray-400">Ingrese su nueva contraseña.</p>
 
           <div>
-            <Input
+            <PasswordInput
               label="Nueva Contraseña"
-              type="password"
               fullWidth
               leftIcon={<Lock size={18} />}
               error={errors.newPassword?.message}
@@ -89,9 +89,8 @@ export const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({ token }) =
           </div>
 
           <div>
-            <Input
+            <PasswordInput
               label="Confirmar Contraseña"
-              type="password"
               fullWidth
               leftIcon={<Lock size={18} />}
               error={errors.confirmPassword?.message}

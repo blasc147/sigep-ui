@@ -77,7 +77,6 @@ const EditarBeneficiarioPage = () => {
     isFormLoaded,
     setValue,
     loadBeneficiarioData,
-    refetch,
   } = useEditBeneficiarioForm(beneficiarioId)
 
   // Forzar la carga del formulario después de 3 segundos si aún no se ha cargado
@@ -92,8 +91,12 @@ const EditarBeneficiarioPage = () => {
     return () => clearTimeout(timer)
   }, [isFormLoaded, beneficiario, loadBeneficiarioData])
 
-  // Mostrar el formulario si tenemos datos del beneficiario, incluso si isFormLoaded es false
-  const shouldShowForm = beneficiario && !isLoadingBeneficiario
+  // Mostrar el formulario solo cuando el beneficiario esté cargado Y el formulario esté listo
+  const shouldShowForm = beneficiario && !isLoadingBeneficiario && isFormLoaded
+
+  const handleRetry = () => {
+    router.reload()
+  }
 
   return (
     <MainLayout title="Editar Beneficiario">
@@ -109,10 +112,12 @@ const EditarBeneficiarioPage = () => {
           </Button>
         </div>
 
-        {isLoadingBeneficiario ? (
+        {isLoadingBeneficiario || !isFormLoaded ? (
           <div className="flex flex-col items-center justify-center h-64 space-y-4">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-500"></div>
-            <p className="text-gray-500 dark:text-gray-400">Cargando datos del beneficiario...</p>
+            <p className="text-gray-500 dark:text-gray-400">
+              {isLoadingBeneficiario ? "Cargando datos del beneficiario..." : "Preparando formulario..."}
+            </p>
           </div>
         ) : beneficiarioError ? (
           <div className="bg-red-50 border border-red-200 dark:bg-red-900/20 dark:border-red-800 rounded-lg p-4 mb-4">
@@ -125,11 +130,11 @@ const EditarBeneficiarioPage = () => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => router.push("/beneficiarios")}
+                onClick={handleRetry}
                 leftIcon={<RefreshCw size={16} />}
                 className="ml-4"
               >
-                Volver al listado
+                Reintentar
               </Button>
             </div>
           </div>
@@ -244,6 +249,7 @@ const EditarBeneficiarioPage = () => {
               register={register} 
               errors={errors} 
               setValue={setValue}
+              isEditMode={true}
             />
 
             {/* Botones de acción */}

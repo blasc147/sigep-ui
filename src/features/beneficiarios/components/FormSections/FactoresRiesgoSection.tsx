@@ -153,11 +153,23 @@ export const FactoresRiesgoSection = ({ control, register, errors }: FactoresRie
                     </button>
                   ))}
                 </div>
-                {hoveredScore !== null && (
-                  <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                    {RISK_LEVELS.find((level) => level.value === hoveredScore)?.label}
+                
+                {/* Contenedor con altura fija para evitar el salto del contenido */}
+                <div className="h-6 mt-2 transition-all duration-200 ease-in-out">
+                  <p 
+                    className={`text-sm text-gray-600 dark:text-gray-400 transition-all duration-200 ease-in-out ${
+                      hoveredScore !== null 
+                        ? 'opacity-100 transform translate-y-0' 
+                        : 'opacity-0 transform -translate-y-1'
+                    }`}
+                  >
+                    {hoveredScore !== null 
+                      ? RISK_LEVELS.find((level) => level.value === hoveredScore)?.label 
+                      : '\u00A0' // Espacio no rompible para mantener la altura
+                    }
                   </p>
-                )}
+                </div>
+               
                 {errors.score_riesgo && (
                   <p className="mt-1 text-sm text-red-500">{errors.score_riesgo.message}</p>
                 )}

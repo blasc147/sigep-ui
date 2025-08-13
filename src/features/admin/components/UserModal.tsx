@@ -2,18 +2,19 @@
 
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { userService } from "@/services/userService"
-import { useToast } from "@/components/ui/Toast"
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
-import { X } from "react-feather"
-import type { User, UpdateUserRequest, Role, Efector } from "@/types/user"
+import { PasswordInput } from "@/components/ui/PasswordInput"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { userService } from "@/services/userService"
+import { useToast } from "@/components/ui/Toast"
+import { X, Search } from "react-feather"
+import type { User as UserType, Efector } from "@/types/user"
 
 interface UserModalProps {
   isOpen: boolean
   onClose: () => void
-  user: User | null
+  user: UserType | null
 }
 
 type FormData = {
@@ -22,7 +23,7 @@ type FormData = {
   name: string
   dni: string
   email: string
-  role: Role
+  role: string
 }
 
 export const UserModal = ({ isOpen, onClose, user }: UserModalProps) => {
@@ -43,7 +44,7 @@ export const UserModal = ({ isOpen, onClose, user }: UserModalProps) => {
       name: "",
       dni: "",
       email: "",
-      role: "user" as Role,
+      role: "user",
     },
   })
 
@@ -93,7 +94,7 @@ export const UserModal = ({ isOpen, onClose, user }: UserModalProps) => {
 
   // Mutación para actualizar usuario
   const updateUserMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateUserRequest }) => userService.updateUser(id, data),
+    mutationFn: ({ id, data }: { id: string; data: any }) => userService.updateUser(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] })
       addToast("Usuario actualizado correctamente", "success")
@@ -233,9 +234,8 @@ export const UserModal = ({ isOpen, onClose, user }: UserModalProps) => {
 
             {!user && (
               <div>
-                <Input
+                <PasswordInput
                   label="Contraseña"
-                  type="password"
                   {...register("password", {
                     required: !user && "La contraseña es requerida",
                   })}

@@ -12,9 +12,10 @@ interface DatosAdministrativosSectionProps {
   register: any
   errors: any
   setValue: any
+  isEditMode?: boolean
 }
 
-export const DatosAdministrativosSection = ({ control, register, errors, setValue }: DatosAdministrativosSectionProps) => {
+export const DatosAdministrativosSection = ({ control, register, errors, setValue, isEditMode = false }: DatosAdministrativosSectionProps) => {
   // Set tipo_ficha to "2" by default when component mounts
   useEffect(() => {
     setValue("tipo_ficha", "2")
@@ -50,19 +51,22 @@ export const DatosAdministrativosSection = ({ control, register, errors, setValu
   return (
     <FormSection title="Datos Administrativos">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Input
-          label="Fecha de Inscripción"
-          type="date"
-          {...register("fecha_inscripcion", { 
-            required: "La fecha de inscripción es requerida",
-            validate: validateInscriptionDate
-          })}
-          error={errors.fecha_inscripcion?.message}
-          fullWidth
-          required
-          min={minDate}
-          max={maxDate}
-        />
+        {/* Solo mostrar fecha de inscripción si NO está en modo edición */}
+        {!isEditMode && (
+          <Input
+            label="Fecha de Inscripción"
+            type="date"
+            {...register("fecha_inscripcion", { 
+              required: "La fecha de inscripción es requerida",
+              validate: validateInscriptionDate
+            })}
+            error={errors.fecha_inscripcion?.message}
+            fullWidth
+            required
+            min={minDate}
+            max={maxDate}
+          />
+        )}
 
         <div className="col-span-2">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Observaciones</label>

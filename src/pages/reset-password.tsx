@@ -1,14 +1,16 @@
+import type React from "react"
 import { useState } from "react"
-import { useRouter } from "next/router"
 import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Input } from "@/components/ui/Input"
+import { useRouter } from "next/router"
 import { Button } from "@/components/ui/Button"
+import { Input } from "@/components/ui/Input"
+import { PasswordInput } from "@/components/ui/PasswordInput"
 import { Card } from "@/components/ui/Card"
 import { useToast } from "@/components/ui/Toast"
 import { Lock } from "react-feather"
 import Image from "next/image"
+import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
 
 // Schema de validación
 const resetPasswordSchema = z.object({
@@ -115,8 +117,7 @@ export default function ResetPasswordPage() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
-            <Input
-              type="password"
+            <PasswordInput
               label="Nueva Contraseña"
               fullWidth
               {...register("password")}
@@ -125,8 +126,7 @@ export default function ResetPasswordPage() {
           </div>
 
           <div>
-            <Input
-              type="password"
+            <PasswordInput
               label="Confirmar Contraseña"
               fullWidth
               {...register("confirmPassword")}

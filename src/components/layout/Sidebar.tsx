@@ -137,7 +137,7 @@ export const Sidebar: React.FC = () => {
             )}
 
             {/* Sección de Manager - Cambiado de MANAGER a manager */}
-            {(hasRole("manager") || hasRole("admin")) && (
+            {( hasRole("admin")) && (
               <>
                 <h3 className="px-4 mt-6 mb-2 text-xs font-semibold text-gray-500 uppercase dark:text-gray-400">
                   Gestión
