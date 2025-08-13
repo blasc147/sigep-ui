@@ -1,0 +1,246 @@
+CREATE TABLE [dbo].[spsPrecios](
+	[PrecioId] [int] IDENTITY(1,1) NOT NULL,
+	[idObj] [char](4) NOT NULL,
+	[idDiag] [varchar](5) NOT NULL,
+	[FechaDesde] [datetime] NOT NULL,
+	[FechaHasta] [datetime] NULL,
+	[Monto] [money] NULL,
+	[Activo] [bit] NOT NULL,
+	[Creado] [datetime] NOT NULL,
+	[CreadoPor] [varchar](256) NOT NULL,
+	[Modificado] [datetime] NULL,
+	[ModificadoPor] [varchar](256) NULL,
+ CONSTRAINT [PK_spsPrecios] PRIMARY KEY CLUSTERED 
+(
+	[PrecioId] ASC
+)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+
+
+CREATE TABLE [dbo].[spsPreciosInternaciones](
+	[PrecioId] [int] NOT NULL,
+	[PrecioPreQuirurgico] [money] NULL,
+	[PrecioCirugia] [money] NULL,
+	[PrecioUTI] [money] NULL,
+	[PrecioUCIN] [money] NULL,
+	[PrecioSalaComun] [money] NULL,
+ CONSTRAINT [PK_spsPreciosInternaciones] PRIMARY KEY CLUSTERED 
+(
+	[PrecioId] ASC
+)WITH (PAD_INDEX  = OFF, STATISTICS_NORECOMPUTE  = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS  = ON, ALLOW_PAGE_LOCKS  = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+ALTER TABLE [dbo].[spsPreciosInternaciones]  WITH CHECK ADD  CONSTRAINT [FK_spsPreciosInternaciones_spsPrecios] FOREIGN KEY([PrecioId])
+REFERENCES [dbo].[spsPrecios] ([PrecioId])
+ON DELETE CASCADE
+GO
+
+ALTER TABLE [dbo].[spsPreciosInternaciones] CHECK CONSTRAINT [FK_spsPreciosInternaciones_spsPrecios]
+GO
+
+
+Ejemplo de 1 precio history
+
+PrecioId	idObj	idDiag	FechaDesde	FechaHasta	Monto	Activo	Creado	CreadoPor	Modificado	ModificadoPor
+1	A001	A98	2012-09-01 00:00:00.000	2015-03-01 00:00:00.000	20.00	1	2014-04-21 08:52:59.117	jose	NULL	NULL
+900	A001	A98	2015-03-01 00:00:00.000	2018-03-01 00:00:00.000	100.00	1	2015-05-05 11:38:55.063	ggoujon	NULL	NULL
+2682	A001	A98	2018-03-01 00:00:00.000	2019-03-01 00:00:00.000	150.00	1	2018-03-07 09:26:08.190	orosas	NULL	NULL
+2869	A001	A98	2019-03-01 00:00:00.000	2019-09-01 00:00:00.000	300.00	1	2019-02-25 10:21:34.193	mnajmias	NULL	NULL
+4185	A001	A98	2019-09-01 00:00:00.000	2020-03-01 00:00:00.000	100.00	1	2019-08-26 10:44:22.533	orosas	NULL	NULL
+5966	A001	A98	2020-03-01 00:00:00.000	2024-04-01 00:00:00.000	420.00	1	2020-04-29 11:11:33.070	gossola	2024-03-19 00:00:00.000	sistemas
+8863	A001	A98	2024-04-01 00:00:00.000	2025-01-01 00:00:00.000	1260.00	1	2024-03-19 00:00:00.000	sportela	NULL	NULL
+10567	A001	A98	2025-01-01 00:00:00.000	NULL	2016.00	1	2025-01-07 09:37:13.763	apiccoli	NULL	NULL
+
+
+UPDATE p
+SET FechaHasta = '2025-08-01'
+FROM spsPrecios p
+INNER JOIN (
+    SELECT idObj, idDiag, MAX(FechaDesde) AS MaxFechaDesde
+    FROM spsPrecios
+    WHERE Activo = 1
+    GROUP BY idObj, idDiag
+) ult
+    ON p.idObj = ult.idObj
+    AND p.idDiag = ult.idDiag
+    AND p.FechaDesde = ult.MaxFechaDesde
+    AND p.Activo = 1
+WHERE p.FechaHasta IS NULL
+
+
+
+INSERT INTO spsPrecios (
+    idObj, idDiag, FechaDesde, FechaHasta, Monto, Activo, Creado, CreadoPor, Modificado, ModificadoPor
+)
+SELECT
+    p.idObj,
+    p.idDiag,
+    '2025-08-01' AS FechaDesde,
+    NULL AS FechaHasta,
+    ROUND(p.Monto * 1.75, 2) AS Monto,
+    1 AS Activo,
+    GETDATE() AS Creado,
+    'Sistemas' AS CreadoPor,
+    NULL AS Modificado,
+    NULL AS ModificadoPor
+FROM spsPrecios p
+INNER JOIN (
+    SELECT idObj, idDiag, MAX(FechaDesde) AS MaxFechaDesde
+    FROM spsPrecios
+    WHERE Activo = 1
+    GROUP BY idObj, idDiag
+) ult
+    ON p.idObj = ult.idObj
+    AND p.idDiag = ult.idDiag
+    AND p.FechaDesde = ult.MaxFechaDesde
+    AND p.Activo = 1
+WHERE (p.FechaHasta = '2025-08-01' OR p.FechaHasta IS NULL)
+  AND (p.idObj + '-' + p.idDiag) NOT IN (
+    'T032-A98', 'T033-A98', 'T048-A98', 'T044-A98', 'T043-A98',
+    'C044-K22', 'C124-K22', 'C123-K22', 'C048-K22', 'C049-K22',
+    'N010-K22', 'N008-K22', 'N007-K22', 'N009-K22', 'T023-P22',
+    'C075-A98', 'C089-P22', 'T023-A98', 'C075-A98', 'N031-A98',
+    'C050-A98', 'C050-T89', 'C050-T90', 'M095-T89', 'M095-T90',
+    'C051-T89', 'C051-T90', 'C114-T89', 'C114-T90', 'M096-T89',
+    'M096-T90', 'N032-T89', 'N032-T90', 'P060-T89', 'P060-T90',
+    'M005-T89', 'M005-T90', 'C045-U89', 'C047-A98', 'C047-U89',
+    'C115-U89', 'C122-R95', 'C117-R95', 'C074-K86', 'N030-K86'
+  )
+  AND p.idObj <> 'L056'
+
+-- Script para las combinaciones excluidas: aumento del 100%
+INSERT INTO spsPrecios (
+    idObj, idDiag, FechaDesde, FechaHasta, Monto, Activo, Creado, CreadoPor, Modificado, ModificadoPor
+)
+SELECT
+    p.idObj,
+    p.idDiag,
+    '2025-08-01' AS FechaDesde,
+    NULL AS FechaHasta,
+    ROUND(p.Monto * 2.00, 2) AS Monto,
+    1 AS Activo,
+    GETDATE() AS Creado,
+    'Sistemas' AS CreadoPor,
+    NULL AS Modificado,
+    NULL AS ModificadoPor
+FROM spsPrecios p
+INNER JOIN (
+    SELECT idObj, idDiag, MAX(FechaDesde) AS MaxFechaDesde
+    FROM spsPrecios
+    WHERE Activo = 1
+    GROUP BY idObj, idDiag
+) ult
+    ON p.idObj = ult.idObj
+    AND p.idDiag = ult.idDiag
+    AND p.FechaDesde = ult.MaxFechaDesde
+    AND p.Activo = 1
+WHERE (p.FechaHasta = '2025-08-01' OR p.FechaHasta IS NULL)
+  AND (
+    (p.idObj + '-' + p.idDiag) IN (
+      'T032-A98', 'T033-A98', 'T048-A98', 'T044-A98', 'T043-A98',
+      'C044-K22', 'C124-K22', 'C123-K22', 'C048-K22', 'C049-K22',
+      'N010-K22', 'N008-K22', 'N007-K22', 'N009-K22', 'T023-P22',
+      'C075-A98', 'C089-P22', 'T023-A98', 'C075-A98', 'N031-A98',
+      'C050-A98', 'C050-T89', 'C050-T90', 'M095-T89', 'M095-T90',
+      'C051-T89', 'C051-T90', 'C114-T89', 'C114-T90', 'M096-T89',
+      'M096-T90', 'N032-T89', 'N032-T90', 'P060-T89', 'P060-T90',
+      'M005-T89', 'M005-T90', 'C045-U89', 'C047-A98', 'C047-U89',
+      'C115-U89', 'C122-R95', 'C117-R95', 'C074-K86', 'N030-K86'
+    )
+    OR p.idObj = 'L056'
+  )
+
+INSERT INTO spsPreciosInternaciones (
+    PrecioId, PrecioPreQuirurgico, PrecioCirugia, PrecioUTI, PrecioUCIN, PrecioSalaComun
+)
+SELECT
+    nuevo.PrecioId,
+    ROUND(prevInt.PrecioPreQuirurgico * 1.75, 2),
+    ROUND(prevInt.PrecioCirugia * 1.75, 2),
+    ROUND(prevInt.PrecioUTI * 1.75, 2),
+    ROUND(prevInt.PrecioUCIN * 1.75, 2),
+    ROUND(prevInt.PrecioSalaComun * 1.75, 2)
+FROM spsPrecios nuevo
+INNER JOIN spsPrecios prev
+    ON prev.idObj = nuevo.idObj
+    AND prev.idDiag = nuevo.idDiag
+    AND prev.FechaDesde = (
+        SELECT MAX(FechaDesde)
+        FROM spsPrecios
+        WHERE idObj = nuevo.idObj
+          AND idDiag = nuevo.idDiag
+          AND FechaDesde < '2025-08-01'
+    )
+INNER JOIN spsPreciosInternaciones prevInt
+    ON prevInt.PrecioId = prev.PrecioId
+LEFT JOIN spsPreciosInternaciones yaExiste
+    ON yaExiste.PrecioId = nuevo.PrecioId
+WHERE nuevo.FechaDesde = '2025-08-01'
+  AND nuevo.Activo = 1
+  AND yaExiste.PrecioId IS NULL;
+
+-- FLUJO COMPLETO DE ACTUALIZACIÓN PARA LA PRESTACIÓN C001 A98
+
+-- 1. Actualizar FechaHasta del precio anterior
+UPDATE p
+SET FechaHasta = '2025-08-01'
+FROM spsPrecios p
+WHERE p.idObj = 'C001'
+  AND p.idDiag = 'A98'
+  AND p.FechaHasta IS NULL;
+
+-- 2. Insertar el nuevo precio con 75% de aumento
+INSERT INTO spsPrecios (
+    idObj, idDiag, FechaDesde, FechaHasta, Monto, Activo, Creado, CreadoPor, Modificado, ModificadoPor
+)
+SELECT
+    p.idObj,
+    p.idDiag,
+    '2025-08-01' AS FechaDesde,
+    NULL AS FechaHasta,
+    ROUND(p.Monto * 1.75, 2) AS Monto,
+    1 AS Activo,
+    GETDATE() AS Creado,
+    'Sistemas' AS CreadoPor,
+    NULL AS Modificado,
+    NULL AS ModificadoPor
+FROM spsPrecios p
+WHERE p.idObj = 'C001'
+  AND p.idDiag = 'A98'
+  AND p.FechaHasta = '2025-08-01';
+
+-- 3. Insertar internación para el nuevo precio si corresponde
+INSERT INTO spsPreciosInternaciones (
+    PrecioId, PrecioPreQuirurgico, PrecioCirugia, PrecioUTI, PrecioUCIN, PrecioSalaComun
+)
+SELECT
+    nuevo.PrecioId,
+    ROUND(prevInt.PrecioPreQuirurgico * 1.75, 2),
+    ROUND(prevInt.PrecioCirugia * 1.75, 2),
+    ROUND(prevInt.PrecioUTI * 1.75, 2),
+    ROUND(prevInt.PrecioUCIN * 1.75, 2),
+    ROUND(prevInt.PrecioSalaComun * 1.75, 2)
+FROM spsPrecios nuevo
+INNER JOIN spsPrecios prev
+    ON prev.idObj = nuevo.idObj
+    AND prev.idDiag = nuevo.idDiag
+    AND prev.FechaDesde = (
+        SELECT MAX(FechaDesde)
+        FROM spsPrecios
+        WHERE idObj = nuevo.idObj
+          AND idDiag = nuevo.idDiag
+          AND FechaDesde < '2025-08-01'
+    )
+INNER JOIN spsPreciosInternaciones prevInt
+    ON prevInt.PrecioId = prev.PrecioId
+WHERE nuevo.idObj = 'C001'
+  AND nuevo.idDiag = 'A98'
+  AND nuevo.FechaDesde = '2025-08-01';
+
+-- 4. Verificar el resultado
+SELECT * FROM spsPrecios WHERE idObj = 'C001' AND idDiag = 'A98';
+SELECT * FROM spsPreciosInternaciones WHERE PrecioId IN (SELECT PrecioId FROM spsPrecios WHERE idObj = 'C001' AND idDiag = 'A98');
+
