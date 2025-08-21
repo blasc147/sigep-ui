@@ -25,6 +25,32 @@ export default function BeneficiarioDetailPage() {
     enabled: !!claveBeneficiario,
   })
 
+  // Consulta para obtener las categorías
+  const { data: categorias = [] } = useQuery({
+    queryKey: ["categorias"],
+    queryFn: beneficiarioService.getCategorias,
+  })
+
+  // Consulta para obtener las tribus
+  const { data: tribus = [] } = useQuery({
+    queryKey: ["tribus"],
+    queryFn: beneficiarioService.getTribus,
+  })
+
+  // Consulta para obtener las lenguas
+  const { data: lenguas = [] } = useQuery({
+    queryKey: ["lenguas"],
+    queryFn: beneficiarioService.getLenguas,
+  })
+
+  // Función para obtener la descripción de la categoría
+  const getCategoriaDescripcion = (idCategoria: number | string) => {
+    if (!idCategoria || !categorias.length) return `Categoría ${idCategoria}`
+    
+    const categoria = categorias.find(cat => cat.id_categoria === Number(idCategoria))
+    return categoria ? categoria.categoria : `Categoría ${idCategoria}`
+  }
+
   const bajaBeneficiarioMutation = useMutation({
     mutationFn: (id: number) => beneficiarioService.bajaBeneficiario(id),
     onSuccess: () => {
@@ -127,13 +153,13 @@ export default function BeneficiarioDetailPage() {
             <Button variant="outline" onClick={handlePrintCertificate} leftIcon={<FileText size={16} />}>
               Imprimir Certificado
             </Button>
-            <Button 
+            {/* <Button 
               variant="danger" 
               onClick={() => setShowConfirmDialog(true)}
               leftIcon={<UserMinus size={16} />}
             >
               Dar de Baja
-            </Button>
+            </Button> */}
           </div>
         </div>
 
@@ -186,7 +212,7 @@ export default function BeneficiarioDetailPage() {
                 />
                 <DetailField 
                   label="Categoría" 
-                  value="Categoría 5"
+                  value={getCategoriaDescripcion(beneficiario.id_categoria)}
                 />
               </div>
             </DetailSection>

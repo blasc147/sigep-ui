@@ -83,7 +83,6 @@ export const DatosBasicosSection = ({ control, register, errors, categorias, set
               error={errors.clase_documento_benef?.message}
               required
               inline
-              disabled={isEditMode}
             />
           )}
         />
@@ -101,7 +100,6 @@ export const DatosBasicosSection = ({ control, register, errors, categorias, set
               onChange={field.onChange}
               error={errors.tipo_documento?.message}
               required
-              disabled={isEditMode}
             />
           )}
         />
