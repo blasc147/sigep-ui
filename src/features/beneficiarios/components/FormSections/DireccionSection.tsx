@@ -67,8 +67,8 @@ export const DireccionSection = ({
   municipioId,
   setMunicipioId,
 }: DireccionSectionProps) => {
-  const [usarCallePersonalizada, setUsarCallePersonalizada] = useState(false)
-  const [usarBarrioPersonalizado, setUsarBarrioPersonalizado] = useState(false)
+  const [usarCallePersonalizada, setUsarCallePersonalizada] = useState(true)
+  const [usarBarrioPersonalizado, setUsarBarrioPersonalizado] = useState(true)
 
   return (
     <FormSection title="Dirección">

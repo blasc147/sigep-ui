@@ -14,6 +14,26 @@ import type {
   Efector,
 } from "@/types/beneficiario"
 
+// Función para procesar errores de la API
+const processApiError = (error: any): string => {
+  if (error.response?.data) {
+    const responseData = error.response.data
+    
+    // Si hay un array de errores, tomar el primer mensaje
+    if (responseData.errors && Array.isArray(responseData.errors) && responseData.errors.length > 0) {
+      return responseData.errors[0]
+    }
+    
+    // Si hay un mensaje general
+    if (responseData.message) {
+      return responseData.message
+    }
+  }
+  
+  // Mensaje por defecto si no hay información específica
+  return error.message || "Error desconocido"
+}
+
 // Interfaz para la respuesta paginada
 interface PaginatedResponse<T> {
   items: T[]
@@ -61,17 +81,32 @@ export const beneficiarioService = {
   },
 
   createBeneficiario: async (data: BeneficiarioCreateRequest): Promise<Beneficiario> => {
-    const response = await api.post<Beneficiario>("/beneficiarios", data)
-    return response.data
+    try {
+      const response = await api.post<Beneficiario>("/beneficiarios", data)
+      return response.data
+    } catch (error) {
+      const errorMessage = processApiError(error)
+      throw new Error(errorMessage)
+    }
   },
 
   updateBeneficiario: async (id: number, data: Partial<BeneficiarioCreateRequest>): Promise<Beneficiario> => {
-    const response = await api.patch<Beneficiario>(`/beneficiarios/${id}`, data)
-    return response.data
+    try {
+      const response = await api.patch<Beneficiario>(`/beneficiarios/${id}`, data)
+      return response.data
+    } catch (error) {
+      const errorMessage = processApiError(error)
+      throw new Error(errorMessage)
+    }
   },
 
   deleteBeneficiario: async (id: number): Promise<void> => {
-    await api.delete(`/beneficiarios/${id}`)
+    try {
+      await api.delete(`/beneficiarios/${id}`)
+    } catch (error) {
+      const errorMessage = processApiError(error)
+      throw new Error(errorMessage)
+    }
   },
 
   // Datos de referencia
@@ -143,7 +178,12 @@ export const beneficiarioService = {
   },
 
   bajaBeneficiario: async (id: number): Promise<void> => {
-    await api.patch(`/beneficiarios/${id}/baja`)
+    try {
+      await api.patch(`/beneficiarios/${id}/baja`)
+    } catch (error) {
+      const errorMessage = processApiError(error)
+      throw new Error(errorMessage)
+    }
   },
 
   geocodeBeneficiario: async (data: {
@@ -159,14 +199,19 @@ export const beneficiarioService = {
     precision: number
     direccion_formateada: string
   }> => {
-    const response = await api.post("/beneficiarios/geocode", {
-      calle: data.calle,
-      numero: data.numero,
-      barrio: data.barrio,
-      localidad: data.localidad,
-      provincia: data.provincia,
-      pais: data.pais
-    })
-    return response.data
+    try {
+      const response = await api.post("/beneficiarios/geocode", {
+        calle: data.calle,
+        numero: data.numero,
+        barrio: data.barrio,
+        localidad: data.localidad,
+        provincia: data.provincia,
+        pais: data.pais
+      })
+      return response.data
+    } catch (error) {
+      const errorMessage = processApiError(error)
+      throw new Error(errorMessage)
+    }
   },
 }
