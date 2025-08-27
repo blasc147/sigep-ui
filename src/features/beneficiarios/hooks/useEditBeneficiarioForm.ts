@@ -510,6 +510,19 @@ export const useEditBeneficiarioForm = (beneficiarioId: number | undefined) => {
       // Crear una copia de los datos para modificarlos
       const formData = { ...data }
 
+      // Procesar fechas para evitar problemas de zona horaria
+      if (formData.fecha_nacimiento_benef) {
+        // Asegurar que la fecha se envíe en el formato correcto sin zona horaria
+        const fechaNac = new Date(formData.fecha_nacimiento_benef + 'T00:00:00')
+        formData.fecha_nacimiento_benef = fechaNac.toISOString().split('T')[0]
+      }
+
+      if (formData.fecha_inscripcion) {
+        // Asegurar que la fecha se envíe en el formato correcto sin zona horaria
+        const fechaInsc = new Date(formData.fecha_inscripcion + 'T00:00:00')
+        formData.fecha_inscripcion = fechaInsc.toISOString().split('T')[0]
+      }
+
       // Convertir IDs a nombres para los campos de ubicación
       // Lugar de nacimiento
       if (formData.pais_nac) {

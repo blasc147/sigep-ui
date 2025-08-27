@@ -110,7 +110,6 @@ export const DatosBasicosSection = ({ control, register, errors, categorias, set
           error={errors.numero_doc?.message}
           fullWidth
           required
-          disabled={isEditMode}
         />
 
         <Input
