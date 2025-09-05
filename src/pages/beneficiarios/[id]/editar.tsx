@@ -207,6 +207,7 @@ const EditarBeneficiarioPage = () => {
               register={register}
               errors={errors}
               setValue={setValue}
+              isEditMode={true}
               paises={paises}
               provinciasResidencia={provinciasResidencia}
               departamentosResidencia={departamentosResidencia}

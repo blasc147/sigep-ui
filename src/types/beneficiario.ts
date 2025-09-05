@@ -175,7 +175,7 @@ export interface Beneficiario {
   tipo_transaccion?: string
   fecha_carga?: string
   usuario_carga?: string
-  activo?: boolean
+  activo?: boolean | "S" | "1"
 }
 
 export interface BeneficiarioCreateRequest extends Omit<Beneficiario, "id"> {}

@@ -1,9 +1,9 @@
 "use client"
 
-import { Controller } from "react-hook-form"
+import { Controller, useWatch } from "react-hook-form"
 import { Input } from "@/components/ui/Input"
 import { FormSection } from "@/features/beneficiarios/components/FormSection"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import type { Control, FieldErrors, UseFormRegister } from "react-hook-form"
 import type {
   BeneficiarioCreateRequest,
@@ -23,6 +23,7 @@ interface DireccionSectionProps {
   register: UseFormRegister<BeneficiarioCreateRequest>
   errors: FieldErrors<BeneficiarioCreateRequest>
   setValue: (name: any, value: any) => void
+  isEditMode?: boolean
   paises: Pais[]
   provinciasResidencia: Provincia[]
   departamentosResidencia: Departamento[]
@@ -48,6 +49,7 @@ export const DireccionSection = ({
   register,
   errors,
   setValue,
+  isEditMode = false,
   paises,
   provinciasResidencia,
   departamentosResidencia,
@@ -69,6 +71,36 @@ export const DireccionSection = ({
 }: DireccionSectionProps) => {
   const [usarCallePersonalizada, setUsarCallePersonalizada] = useState(true)
   const [usarBarrioPersonalizado, setUsarBarrioPersonalizado] = useState(true)
+
+  // Observar el valor actual del barrio para determinar el modo
+  const barrioValue = useWatch({
+    control,
+    name: "barrio"
+  })
+
+  // Detectar automáticamente el modo del barrio basado en el valor cargado
+  useEffect(() => {
+    console.log("useEffect barrio - valor:", barrioValue, "tipo:", typeof barrioValue, "barrios disponibles:", barrios.length)
+    
+    if (barrioValue !== undefined && barrioValue !== null && barrioValue !== "") {
+      // Si el valor es un número y existe en la lista de barrios, usar el select (modo false)
+      // Si el valor es un string o no se encuentra en la lista, usar el input manual (modo true)
+      const esNumero = typeof barrioValue === 'number' || (!isNaN(Number(barrioValue)) && Number(barrioValue) > 0)
+      
+      console.log("Es número:", esNumero)
+      
+      if (esNumero) {
+        // Verificar si el ID existe en la lista de barrios disponibles
+        const barrioEncontrado = barrios.find(barrio => barrio.id_barrio === Number(barrioValue))
+        console.log("Barrio encontrado en lista:", barrioEncontrado)
+        setUsarBarrioPersonalizado(!barrioEncontrado)
+      } else {
+        // Es un string, usar input manual
+        console.log("Usando input manual para string")
+        setUsarBarrioPersonalizado(true)
+      }
+    }
+  }, [barrioValue, barrios])
 
   return (
     <FormSection title="Dirección">
@@ -203,8 +235,10 @@ export const DireccionSection = ({
                   <button
                     type="button"
                     onClick={() => {
+                      console.log("Cambiando modo de barrio, valor actual:", field.value)
                       setUsarBarrioPersonalizado(!usarBarrioPersonalizado)
-                      setValue("barrio", "") // Limpiar el valor al cambiar
+                      // NO limpiar el valor automáticamente, mantener el valor actual
+                      // setValue("barrio", "")
                     }}
                     className="text-xs text-brand-500 hover:text-brand-600 dark:text-brand-400 dark:hover:text-brand-300"
                   >
@@ -215,7 +249,12 @@ export const DireccionSection = ({
 
               {usarBarrioPersonalizado ? (
                 <Input
-                  {...register("barrio")}
+                  name="barrio"
+                  value={field.value || ""}
+                  onChange={(e) => {
+                    console.log("Input manual onChange para barrio:", e.target.value)
+                    field.onChange(e.target.value)
+                  }}
                   error={errors.barrio?.message}
                   fullWidth
                   placeholder="Ingrese el nombre del barrio"
@@ -228,7 +267,10 @@ export const DireccionSection = ({
                     label: bar.nombre,
                   }))}
                   value={field.value || ""}
-                  onChange={field.onChange}
+                  onChange={(value) => {
+                    console.log("SearchableSelect onChange para barrio:", value)
+                    field.onChange(value)
+                  }}
                   error={errors.barrio?.message}
                   disabled={!municipioId}
                   required

@@ -15,16 +15,24 @@ interface AuthLayoutProps {
 }
 
 export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title = "Autenticación" }) => {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isInitialized } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
-    // Solo redirigir si el usuario está autenticado
-    if (isAuthenticated) {
+    // Solo redirigir si ya se inicializó la verificación y el usuario está autenticado
+    if (isInitialized && isAuthenticated) {
       router.push("/dashboard")
     }
-    // No hacer nada si no está autenticado (mostrar el formulario de login)
-  }, [isAuthenticated, router])
+  }, [isAuthenticated, isInitialized, router])
+
+  // Mostrar loading mientras se verifica la autenticación inicial
+  if (!isInitialized) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-500"></div>
+      </div>
+    )
+  }
 
   // Si está autenticado, no renderizar nada mientras se redirige
   if (isAuthenticated) {

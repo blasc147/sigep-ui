@@ -11,6 +11,7 @@ interface AuthState {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
+  isInitialized: boolean // Nuevo estado para indicar si ya se verificó la autenticación inicial
   error: string | null
   login: (data: LoginRequest) => Promise<boolean>
   logout: () => void
@@ -23,6 +24,7 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       isLoading: false,
+      isInitialized: false,
       error: null,
       login: async (data: LoginRequest) => {
         set({ isLoading: true, error: null })
@@ -88,13 +90,14 @@ export const useAuthStore = create<AuthState>()(
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
+        isInitialized: state.isInitialized,
       }),
     },
   ),
 )
 
 export const useAuth = () => {
-  const { user, isAuthenticated, isLoading, error, login, logout, clearError } = useAuthStore()
+  const { user, isAuthenticated, isLoading, isInitialized, error, login, logout, clearError } = useAuthStore()
 
   // Modificamos la función hasRole para que trabaje con los roles del enum: "user", "admin", "manager"
   const hasRole = useCallback(
@@ -116,6 +119,9 @@ export const useAuth = () => {
   )
 
   useEffect(() => {
+    // Solo ejecutar una vez al cargar la aplicación
+    if (isInitialized) return
+
     // Verificar si hay un token pero no hay usuario (por ejemplo, después de un refresh)
     const token = localStorage.getItem("access_token")
     if (token && !isAuthenticated) {
@@ -127,19 +133,28 @@ export const useAuth = () => {
           useAuthStore.setState({
             user: parsedUser,
             isAuthenticated: true,
+            isInitialized: true,
           })
         } catch (e) {
           // Si hay un error al parsear, hacer logout
           logout()
+          useAuthStore.setState({ isInitialized: true })
         }
+      } else {
+        // No hay usuario guardado, marcar como inicializado
+        useAuthStore.setState({ isInitialized: true })
       }
+    } else {
+      // Ya está autenticado o no hay token, marcar como inicializado
+      useAuthStore.setState({ isInitialized: true })
     }
-  }, [isAuthenticated, logout])
+  }, [isAuthenticated, isInitialized, logout])
 
   return {
     user,
     isAuthenticated,
     isLoading,
+    isInitialized,
     error,
     login,
     logout,

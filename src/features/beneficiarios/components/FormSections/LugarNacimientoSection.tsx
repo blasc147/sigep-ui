@@ -59,6 +59,7 @@ export const LugarNacimientoSection = ({
         <Controller
           name="indigena"
           control={control}
+          rules={{ required: "Este campo es requerido" }}
           render={({ field }) => (
             <RadioGroup
               name="indigena"
@@ -67,6 +68,7 @@ export const LugarNacimientoSection = ({
               value={field.value || "N"}
               onChange={field.onChange}
               error={errors.indigena?.message}
+              required
               inline
             />
           )}

@@ -492,11 +492,11 @@ export default function BeneficiarioDetailPage() {
                   label="Estado" 
                   value={
                     <span className={`px-2 py-1 rounded-full text-sm font-medium ${
-                      beneficiario.activo === "S" 
+                      (beneficiario.activo === "S" || beneficiario.activo === "1" || beneficiario.activo === true)
                         ? "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300" 
                         : "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300"
                     }`}>
-                      {beneficiario.activo === "S" ? "Activo" : "Inactivo"}
+                      {(beneficiario.activo === "S" || beneficiario.activo === "1" || beneficiario.activo === true) ? "Activo" : "Inactivo"}
                     </span>
                   } 
                 />

@@ -61,10 +61,11 @@ export const useEditBeneficiarioForm = (beneficiarioId: number | undefined) => {
         setValue("id_categoria", data.id_categoria || "")
         setValue("sexo", data.sexo || "")
         setValue("fecha_nacimiento_benef", formatDateForInput(data.fecha_nacimiento_benef))
-        setValue("indigena", data.indigena || "N")
+        // Para indigena: solo "S" es válido, cualquier otro valor (incluyendo espacios) se convierte a "N"
+        setValue("indigena", data.indigena === "S" ? "S" : "N")
         setValue("id_tribu", data.id_tribu || "")
         setValue("id_lengua", data.id_lengua || "")
-        setValue("alfabeta", data.alfabeta || "N")
+        setValue("alfabeta", data.alfabeta === "S" ? "S" : "N")
         setValue("estudios", data.estudios || "")
         setValue("anio_mayor_nivel", data.anio_mayor_nivel || "")
         setValue("estadoest", data.estadoest || "")
@@ -75,7 +76,7 @@ export const useEditBeneficiarioForm = (beneficiarioId: number | undefined) => {
         setValue("nro_doc_madre", data.nro_doc_madre || "")
         setValue("nombre_madre", data.nombre_madre || "")
         setValue("apellido_madre", data.apellido_madre || "")
-        setValue("alfabeta_madre", data.alfabeta_madre || "N")
+        setValue("alfabeta_madre", data.alfabeta_madre === "S" ? "S" : "N")
         setValue("estudios_madre", data.estudios_madre || "")
         setValue("anio_mayor_nivel_madre", data.anio_mayor_nivel_madre || "")
         setValue("estadoest_madre", data.estadoest_madre || "")
@@ -85,7 +86,7 @@ export const useEditBeneficiarioForm = (beneficiarioId: number | undefined) => {
         setValue("nro_doc_padre", data.nro_doc_padre || "")
         setValue("nombre_padre", data.nombre_padre || "")
         setValue("apellido_padre", data.apellido_padre || "")
-        setValue("alfabeta_padre", data.alfabeta_padre || "N")
+        setValue("alfabeta_padre", data.alfabeta_padre === "S" ? "S" : "N")
         setValue("estudios_padre", data.estudios_padre || "")
         setValue("anio_mayor_nivel_padre", data.anio_mayor_nivel_padre || "")
         setValue("estadoest_padre", data.estadoest_padre || "")
@@ -95,13 +96,13 @@ export const useEditBeneficiarioForm = (beneficiarioId: number | undefined) => {
         setValue("nro_doc_tutor", data.nro_doc_tutor || "")
         setValue("nombre_tutor", data.nombre_tutor || "")
         setValue("apellido_tutor", data.apellido_tutor || "")
-        setValue("alfabeta_tutor", data.alfabeta_tutor || "N")
+        setValue("alfabeta_tutor", data.alfabeta_tutor === "S" ? "S" : "N")
         setValue("estudios_tutor", data.estudios_tutor || "")
         setValue("anio_mayor_nivel_tutor", data.anio_mayor_nivel_tutor || "")
         setValue("estadoest_tutor", data.estadoest_tutor || "")
 
         // Embarazo
-        setValue("menor_embarazada", data.menor_embarazada || "N")
+        setValue("menor_embarazada", data.menor_embarazada === "S" ? "S" : "N")
         setValue("fecha_diagnostico_embarazo", formatDateForInput(data.fecha_diagnostico_embarazo))
         setValue("semanas_embarazo", data.semanas_embarazo || "")
         setValue("fecha_probable_parto", formatDateForInput(data.fecha_probable_parto))
@@ -114,7 +115,7 @@ export const useEditBeneficiarioForm = (beneficiarioId: number | undefined) => {
         setValue("cuieefectoracargo", data.cuieefectoracargo || "")
 
         // Convivencia
-        setValue("menor_convive_con_adulto", data.menor_convive_con_adulto || "N")
+        setValue("menor_convive_con_adulto", data.menor_convive_con_adulto === "S" ? "S" : "N")
 
         // Dirección
         setValue("calle", data.calle || "")
@@ -133,19 +134,19 @@ export const useEditBeneficiarioForm = (beneficiarioId: number | undefined) => {
         setValue("mail", data.mail || "")
 
         // Discapacidades
-        setValue("discv", data.discv || "N")
-        setValue("disca", data.disca || "N")
-        setValue("discmo", data.discmo || "N")
-        setValue("discme", data.discme || "N")
+        setValue("discv", data.discv === "S" ? "S" : "N")
+        setValue("disca", data.disca === "S" ? "S" : "N")
+        setValue("discmo", data.discmo === "S" ? "S" : "N")
+        setValue("discme", data.discme === "S" ? "S" : "N")
         setValue("otradisc", data.otradisc || "")
 
         // Factores de riesgo
-        setValue("fumador", data.fumador || "N")
-        setValue("diabetes", data.diabetes || "N")
-        setValue("infarto", data.infarto || "N")
-        setValue("acv", data.acv || "N")
-        setValue("hta", data.hta || "N")
-        setValue("estatinas", data.estatinas || "N")
+        setValue("fumador", data.fumador === "S" ? "S" : "N")
+        setValue("diabetes", data.diabetes === "S" ? "S" : "N")
+        setValue("infarto", data.infarto === "S" ? "S" : "N")
+        setValue("acv", data.acv === "S" ? "S" : "N")
+        setValue("hta", data.hta === "S" ? "S" : "N")
+        setValue("estatinas", data.estatinas === "S" ? "S" : "N")
         setValue("score_riesgo", data.score_riesgo || "")
 
         // Geo-ubicación
@@ -212,8 +213,17 @@ export const useEditBeneficiarioForm = (beneficiarioId: number | undefined) => {
         }
 
         if (data.barrio) {
-          // Para barrio, si viene como string y no como objeto
-          setValue("barrio", data.barrio.id_barrio || data.barrio)
+          console.log("Cargando barrio desde datos:", data.barrio, "tipo:", typeof data.barrio)
+          // Para barrio, verificar si es un objeto con id_barrio o un string/número directo
+          if (typeof data.barrio === 'object' && data.barrio.id_barrio) {
+            console.log("Barrio es objeto, usando id_barrio:", data.barrio.id_barrio)
+            setValue("barrio", data.barrio.id_barrio)
+          } else {
+            console.log("Barrio es valor directo:", data.barrio)
+            setValue("barrio", data.barrio)
+          }
+        } else {
+          console.log("No hay datos de barrio en el beneficiario")
         }
 
         console.log("Estableciendo valores de ubicación:")
