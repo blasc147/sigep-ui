@@ -57,6 +57,7 @@ export const DatosBasicosSection = ({ control, register, errors, categorias, set
           label="Apellido"
           {...register("apellido_benef", { required: "El apellido es requerido" })}
           error={errors.apellido_benef?.message}
+          disabled={isEditMode}
           fullWidth
           required
         />
@@ -65,6 +66,7 @@ export const DatosBasicosSection = ({ control, register, errors, categorias, set
           label="Nombre"
           {...register("nombre_benef", { required: "El nombre es requerido" })}
           error={errors.nombre_benef?.message}
+          disabled={isEditMode}
           fullWidth
           required
         />
