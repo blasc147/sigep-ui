@@ -94,7 +94,7 @@ export default function ProfilePage() {
     setIsResettingPassword(true)
     setResetMessage(null)
     try {
-      await fetch("http://localhost:3000/auth/forgot-password", {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/forgot-password`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
