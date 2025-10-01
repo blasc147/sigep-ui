@@ -7,6 +7,7 @@ import { FormSection } from "@/features/beneficiarios/components/FormSection"
 import { RadioGroup } from "@/features/beneficiarios/components/RadioGroup"
 import { SelectField } from "@/features/beneficiarios/components/SelectField"
 import { CLASE_DOCUMENTO_OPTIONS, SEXO_OPTIONS, TIPO_DOCUMENTO_OPTIONS } from "@/constants/options"
+import { useAuth } from "@/hooks/useAuth"
 import type { Control, FieldErrors, UseFormRegister, UseFormSetValue } from "react-hook-form"
 import type { BeneficiarioCreateRequest, Categoria } from "@/types/beneficiario"
 
@@ -20,6 +21,11 @@ interface DatosBasicosSectionProps {
 }
 
 export const DatosBasicosSection = ({ control, register, errors, categorias, setValue, isEditMode = false }: DatosBasicosSectionProps) => {
+  const { hasRole } = useAuth()
+  
+  // Determinar si el usuario puede editar nombre y apellido
+  // Solo admin y manager pueden editar estos campos en modo edición
+  const canEditNameFields = !isEditMode || hasRole("admin") || hasRole("manager")
   const fechaNacimiento = useWatch({
     control,
     name: "fecha_nacimiento_benef"
@@ -52,12 +58,19 @@ export const DatosBasicosSection = ({ control, register, errors, categorias, set
 
   return (
     <FormSection title="Datos Básicos">
+      {isEditMode && !canEditNameFields && (
+        <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md dark:bg-yellow-900/20 dark:border-yellow-800">
+          <p className="text-sm text-yellow-800 dark:text-yellow-200">
+            <strong>Nota:</strong> Solo los administradores y managers pueden modificar el nombre y apellido del beneficiario.
+          </p>
+        </div>
+      )}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Input
           label="Apellido"
           {...register("apellido_benef", { required: "El apellido es requerido" })}
           error={errors.apellido_benef?.message}
-          disabled={isEditMode}
+          disabled={!canEditNameFields}
           fullWidth
           required
         />
@@ -66,7 +79,7 @@ export const DatosBasicosSection = ({ control, register, errors, categorias, set
           label="Nombre"
           {...register("nombre_benef", { required: "El nombre es requerido" })}
           error={errors.nombre_benef?.message}
-          disabled={isEditMode}
+          disabled={!canEditNameFields}
           fullWidth
           required
         />
